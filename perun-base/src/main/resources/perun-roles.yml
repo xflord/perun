@@ -6675,28 +6675,53 @@ perun_policies:
       - default_policy
 
   #consentManagerEntry
+
+  getAllConsents_policy:
+    policy_roles:
+      - PERUNOBSERVER:
+    include_policies:
+      - default_policy
+
   getConsentsForConsentHub_Id_ConsentStatus_policy:
-    policy_roles: []
+    policy_roles:
+      - PERUNOBSERVER:
+      - FACILITYADMIN: Facility
+      - FACILITYOBSERVER: Facility
     include_policies:
       - default_policy
 
   getConsentsForConsentHub_Id_policy:
-    policy_roles: [ ]
+    policy_roles:
+      - PERUNOBSERVER:
+      - FACILITYADMIN: Facility
+      - FACILITYOBSERVER: Facility
     include_policies:
       - default_policy
 
   getConsentsForUser_Id_ConsentStatus_policy:
-    policy_roles: [ ]
+    policy_roles:
+      - PERUNOBSERVER:
+      - FACILITYADMIN: Facility
+      - FACILITYOBSERVER: Facility
+      - SELF: User
     include_policies:
       - default_policy
 
   getConsentsForUser_Id_policy:
-    policy_roles: [ ]
+    policy_roles:
+      - PERUNOBSERVER:
+      - FACILITYADMIN: Facility
+      - FACILITYOBSERVER: Facility
+      - SELF: User
     include_policies:
       - default_policy
 
-  getConsentsById_Id_policy:
-    policy_roles: [ ]
+  getConsentById_Id_policy:
+    policy_roles:
+      - PERUNOBSERVER:
+      - FACILITYADMIN: Facility
+      - FACILITYOBSERVER: Facility
+      - SELF: User
     include_policies:
       - default_policy
 

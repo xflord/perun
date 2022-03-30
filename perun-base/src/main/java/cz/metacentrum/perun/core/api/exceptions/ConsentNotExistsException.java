@@ -38,7 +38,7 @@ public class ConsentNotExistsException extends EntityNotExistsException {
 	}
 
 	/**
-	 * Constructor with the group that does not exist
+	 * Constructor with the consent that does not exist
 	 * @param consent the consent
 	 */
 	public ConsentNotExistsException(Consent consent) {

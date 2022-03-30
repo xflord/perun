@@ -41,6 +41,12 @@ public class ConsentsManagerBlImpl implements ConsentsManagerBl {
 		this.perunBl = perunBl;
 	}
 
+
+	@Override
+	public List<Consent> getAllConsents(PerunSession sess) {
+		return consentsManagerImpl.getAllConsents(sess);
+	}
+
 	@Override
 	public List<ConsentHub> getAllConsentHubs(PerunSession sess) {
 		return getConsentsManagerImpl().getAllConsentHubs(sess);
@@ -109,11 +115,4 @@ public class ConsentsManagerBlImpl implements ConsentsManagerBl {
 	public Consent getConsentById(PerunSession sess, int id) throws ConsentNotExistsException {
 		return consentsManagerImpl.getConsentById(sess, id);
 	}
-
-	@Override
-	public void checkConsentExists(PerunSession sess, Consent consent) throws ConsentNotExistsException {
-		consentsManagerImpl.checkConsentExists(sess, consent);
-	}
-
-
 }

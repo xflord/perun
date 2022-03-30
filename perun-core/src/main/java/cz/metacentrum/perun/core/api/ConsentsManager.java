@@ -17,6 +17,15 @@ import java.util.List;
 public interface ConsentsManager {
 
 	/**
+	 * Gel all consents
+	 *
+	 * @param sess
+	 * @return all existing consents in the database
+	 * @throws PrivilegeException
+	 */
+	List<Consent> getAllConsents(PerunSession sess) throws PrivilegeException;
+
+	/**
 	 * Get all consents for chosen ConsentHub with the specified status
 	 *
 	 * @param sess
@@ -24,8 +33,9 @@ public interface ConsentsManager {
 	 * @param status status of the consent
 	 * @return consents for chosen ConsentHub with the specified status
 	 * @throws PrivilegeException
+	 * @throws ConsentHubNotExistsException
 	 */
-	List<Consent> getConsentsForConsentHub(PerunSession sess, int id, ConsentStatus status) throws PrivilegeException;
+	List<Consent> getConsentsForConsentHub(PerunSession sess, int id, ConsentStatus status) throws PrivilegeException, ConsentHubNotExistsException;
 
 	/**
 	 * Get all consents for chosen ConsentHub
@@ -34,8 +44,9 @@ public interface ConsentsManager {
 	 * @param id id of the ConsentHub
 	 * @return consents for chosen ConsentHub
 	 * @throws PrivilegeException
+	 * @throws ConsentHubNotExistsException
 	 */
-	List<Consent> getConsentsForConsentHub(PerunSession sess, int id) throws PrivilegeException;
+	List<Consent> getConsentsForConsentHub(PerunSession sess, int id) throws PrivilegeException, ConsentHubNotExistsException;
 
 	/**
 	 * Get all consents for chosen User with the specified status

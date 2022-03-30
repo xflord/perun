@@ -20,6 +20,14 @@ import java.util.List;
 public interface ConsentsManagerImplApi {
 
 	/**
+	 * Gel all consents
+	 *
+	 * @param sess
+	 * @return all existing consents in the database
+	 */
+	List<Consent> getAllConsents(PerunSession sess);
+
+	/**
 	 * Get all consents for chosen ConsentHub with the specified status
 	 *
 	 * @param sess

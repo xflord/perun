@@ -1,15 +1,10 @@
 package cz.metacentrum.perun.core.bl;
 
 import cz.metacentrum.perun.core.api.Consent;
-import cz.metacentrum.perun.core.api.ConsentStatus;
-import cz.metacentrum.perun.core.api.exceptions.ConsentNotExistsException;
 import cz.metacentrum.perun.core.api.ConsentHub;
-import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.ConsentStatus;
 import cz.metacentrum.perun.core.api.PerunSession;
-import cz.metacentrum.perun.core.api.exceptions.ConsentHubExistsException;
-import cz.metacentrum.perun.core.api.exceptions.ConsentHubNotExistsException;
-import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
-import cz.metacentrum.perun.core.api.exceptions.ConsentHubAlreadyRemovedException;
+import cz.metacentrum.perun.core.api.exceptions.ConsentNotExistsException;
 
 import java.util.List;
 
@@ -19,6 +14,15 @@ import java.util.List;
  * @author Radoslav Čerhák <r.cerhak@gmail.com>
  */
 public interface ConsentsManagerBl {
+
+
+	/**
+	 * Gel all consents
+	 *
+	 * @param sess
+	 * @return all existing consents in the database
+	 */
+	List<Consent> getAllConsents(PerunSession sess);
 
 	/**
 	 * Get all consents for chosen ConsentHub with the specified status
