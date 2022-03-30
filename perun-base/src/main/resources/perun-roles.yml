@@ -6674,7 +6674,32 @@ perun_policies:
     include_policies:
       - default_policy
 
-  #ConsentsManagerEntry
+  #consentManagerEntry
+  getConsentsForConsentHub_Id_ConsentStatus_policy:
+    policy_roles: []
+    include_policies:
+      - default_policy
+
+  getConsentsForConsentHub_Id_policy:
+    policy_roles: [ ]
+    include_policies:
+      - default_policy
+
+  getConsentsForUser_Id_ConsentStatus_policy:
+    policy_roles: [ ]
+    include_policies:
+      - default_policy
+
+  getConsentsForUser_Id_policy:
+    policy_roles: [ ]
+    include_policies:
+      - default_policy
+
+  getConsentsById_Id_policy:
+    policy_roles: [ ]
+    include_policies:
+      - default_policy
+
   getAllConsentHubs_policy:
     policy_roles:
       - PERUNOBSERVER:

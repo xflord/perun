@@ -1,8 +1,11 @@
 package cz.metacentrum.perun.core.blImpl;
 
+import cz.metacentrum.perun.core.api.Consent;
+import cz.metacentrum.perun.core.api.ConsentStatus;
+import cz.metacentrum.perun.core.api.PerunSession;
+import cz.metacentrum.perun.core.api.exceptions.ConsentNotExistsException;
 import cz.metacentrum.perun.core.api.ConsentHub;
 import cz.metacentrum.perun.core.api.Facility;
-import cz.metacentrum.perun.core.api.PerunSession;
 import cz.metacentrum.perun.core.api.exceptions.ConsentHubExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ConsentHubNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ConsentHubAlreadyRemovedException;
@@ -81,4 +84,36 @@ public class ConsentsManagerBlImpl implements ConsentsManagerBl {
 	public void checkConsentHubExists(PerunSession sess, ConsentHub consentHub) throws ConsentHubNotExistsException {
 		getConsentsManagerImpl().checkConsentHubExists(sess, consentHub);
 	}
+
+	@Override
+	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id, ConsentStatus status) {
+		return consentsManagerImpl.getConsentsForConsentHub(sess, id, status);
+	}
+
+	@Override
+	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id) {
+		return consentsManagerImpl.getConsentsForConsentHub(sess, id);
+	}
+
+	@Override
+	public List<Consent> getConsentsForUser(PerunSession sess, int id, ConsentStatus status) {
+		return consentsManagerImpl.getConsentsForUser(sess, id, status);
+	}
+
+	@Override
+	public List<Consent> getConsentsForUser(PerunSession sess, int id) {
+		return consentsManagerImpl.getConsentsForUser(sess, id);
+	}
+
+	@Override
+	public Consent getConsentById(PerunSession sess, int id) throws ConsentNotExistsException {
+		return consentsManagerImpl.getConsentById(sess, id);
+	}
+
+	@Override
+	public void checkConsentExists(PerunSession sess, Consent consent) throws ConsentNotExistsException {
+		consentsManagerImpl.checkConsentExists(sess, consent);
+	}
+
+
 }

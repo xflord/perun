@@ -1,14 +1,18 @@
 package cz.metacentrum.perun.core.impl;
 
+import cz.metacentrum.perun.core.api.AttributeDefinition;
 import cz.metacentrum.perun.core.api.BeansUtils;
+import cz.metacentrum.perun.core.api.Consent;
 import cz.metacentrum.perun.core.api.ConsentHub;
+import cz.metacentrum.perun.core.api.ConsentStatus;
+import cz.metacentrum.perun.core.api.exceptions.ConsentNotExistsException;
+import cz.metacentrum.perun.core.api.exceptions.ConsistencyErrorException;
 import cz.metacentrum.perun.core.api.PerunSession;
 import cz.metacentrum.perun.core.api.exceptions.ConsentHubNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.implApi.ConsentsManagerImplApi;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.exceptions.ConsentHubAlreadyRemovedException;
-import cz.metacentrum.perun.core.api.exceptions.ConsistencyErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -16,6 +20,7 @@ import org.springframework.jdbc.core.JdbcPerunTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +31,34 @@ import java.util.List;
 public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 
 	final static Logger log = LoggerFactory.getLogger(ConsentsManagerImpl.class);
+
+	private final static String consentMappingSelectQuery = " consents.id as consents_id, consents.user_id as consents_user_id, consents.consent_hub_id as consents_consent_hub_id, " +
+		"consents.status as consents_status, consents.created_at as consents_created_at, consents.created_by as consents_created_by, consents.modified_by as consents_modified_by, consents.modified_at as consents_modified_at, " +
+		"consents.modified_by_uid as consents_modified_by_uid, consents.created_by_uid as consents_created_by_uid ";
+
+	private final static String consentHubMappingQuery = "";
+
+	private final static RowMapper<ConsentHub> CONSENT_HUB_MAPPER = (rs, rowNum) -> {
+		return new ConsentHub();
+	};
+
+	// Consent mapper
+	private final static RowMapper<Consent> CONSENT_MAPPER = (rs, rowNum) -> {
+		Consent c = new Consent();
+		c.setId(rs.getInt("consents_id"));
+		c.setUserId(rs.getInt("consents_user_id"));
+		c.setConsentHub(CONSENT_HUB_MAPPER.mapRow(rs, rowNum));
+		c.setStatus(ConsentStatus.valueOf(rs.getString("consents_status")));
+		c.setCreatedAt(rs.getString("consents_created_at"));
+		c.setCreatedBy(rs.getString("consents_created_by"));
+		c.setModifiedAt(rs.getString("consents_modified_at"));
+		c.setModifiedBy(rs.getString("consents_modified_by"));
+		if(rs.getInt("consents_modified_by_uid") == 0) c.setModifiedByUid(null);
+		else c.setModifiedByUid(rs.getInt("consents_modified_by_uid"));
+		if(rs.getInt("consents_created_by_uid") == 0) c.setCreatedByUid(null);
+		else c.setCreatedByUid(rs.getInt("consents_created_by_uid"));
+		return c;
+	};
 
 	private static JdbcPerunTemplate jdbc;
 
@@ -178,4 +211,128 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	public void checkConsentHubExists(PerunSession sess, ConsentHub consentHub) throws ConsentHubNotExistsException {
 		if(!consentHubExists(sess, consentHub)) throw new ConsentHubNotExistsException("ConsentHub not exists: " + consentHub);
 	}
+
+	@Override
+	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id, ConsentStatus status) {
+		try {
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingQuery +
+				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.consent_hub_id=? and consents.status=? ", CONSENT_MAPPER, id, status);
+			for (Consent consent : consents) {
+				if (consent != null) {
+					consent.setAttributes(getAttrDefsForConsent(sess, id));
+				}
+			}
+			return consents;
+		} catch (EmptyResultDataAccessException ex) {
+			return new ArrayList<>();
+		} catch (RuntimeException err) {
+			throw new InternalErrorException(err);
+		}
+	}
+
+	@Override
+	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id) {
+		try {
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingQuery +
+				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.consent_hub_id=? ", CONSENT_MAPPER, id);
+			for (Consent consent : consents) {
+				if (consent != null) {
+					consent.setAttributes(getAttrDefsForConsent(sess, id));
+				}
+			}
+			return consents;
+		} catch (EmptyResultDataAccessException ex) {
+			return new ArrayList<>();
+		} catch (RuntimeException err) {
+			throw new InternalErrorException(err);
+		}
+	}
+
+	@Override
+	public List<Consent> getConsentsForUser(PerunSession sess, int id, ConsentStatus status) {
+		try {
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingQuery +
+				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.user_id=? and consents.status=? ", CONSENT_MAPPER, id, status);
+			for (Consent consent : consents) {
+				if (consent != null) {
+					consent.setAttributes(getAttrDefsForConsent(sess, id));
+				}
+			}
+			return consents;
+		} catch (EmptyResultDataAccessException ex) {
+			return new ArrayList<>();
+		} catch (RuntimeException err) {
+			throw new InternalErrorException(err);
+		}
+	}
+
+	@Override
+	public List<Consent> getConsentsForUser(PerunSession sess, int id) {
+		try {
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingQuery +
+				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.user_id=? ", CONSENT_MAPPER, id);
+			for (Consent consent : consents) {
+				if (consent != null) {
+					consent.setAttributes(getAttrDefsForConsent(sess, id));
+				}
+			}
+			return consents;
+		} catch (EmptyResultDataAccessException ex) {
+			return new ArrayList<>();
+		} catch (RuntimeException err) {
+			throw new InternalErrorException(err);
+		}
+	}
+
+	@Override
+	public Consent getConsentById(PerunSession sess, int id) throws ConsentNotExistsException {
+		try {
+			Consent consent = jdbc.queryForObject("select " + consentMappingSelectQuery + ", " + consentHubMappingQuery +
+				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.id=? ", CONSENT_MAPPER, id);
+			if (consent != null) {
+				consent.setAttributes(getAttrDefsForConsent(sess, id));
+			}
+			return consent;
+		} catch (EmptyResultDataAccessException ex) {
+			throw new ConsentNotExistsException(ex);
+		} catch (RuntimeException err) {
+			throw new InternalErrorException(err);
+		}
+	}
+
+	@Override
+	public void checkConsentExists(PerunSession sess,  Consent consent) throws ConsentNotExistsException {
+		if (!consentExists(sess, consent)) throw new ConsentNotExistsException("Consent: " + consent);
+	}
+
+	@Override
+	public boolean consentExists(PerunSession sess, Consent consent) {
+		Utils.notNull(consent, "consent");
+		try {
+			int numberOfExistences = jdbc.queryForInt("select count(1) from consents where id=?", consent.getId());
+			if (numberOfExistences == 1) {
+				return true;
+			} else if (numberOfExistences > 1) {
+				throw new ConsistencyErrorException("Consent " + consent + " exists more than once.");
+			}
+			return false;
+		} catch (EmptyResultDataAccessException ex) {
+			return false;
+		} catch (RuntimeException ex) {
+			throw new InternalErrorException(ex);
+		}
+	}
+
+	private List<AttributeDefinition> getAttrDefsForConsent(PerunSession sess, int consentId) {
+		try {
+			return jdbc.query("select " + AttributesManagerImpl.attributeDefinitionMappingSelectQuery + " from attr_names join consent_attr_defs on attr_names.id = consent_attr_defs.attr_id" +
+				" where consent_attr_defs.consent_id=?", AttributesManagerImpl.ATTRIBUTE_DEFINITION_MAPPER, consentId);
+		} catch (EmptyResultDataAccessException ex) {
+			return new ArrayList<>();
+		} catch (RuntimeException err) {
+			throw new InternalErrorException(err);
+		}
+	}
+
+
 }

@@ -1,5 +1,8 @@
 package cz.metacentrum.perun.core.bl;
 
+import cz.metacentrum.perun.core.api.Consent;
+import cz.metacentrum.perun.core.api.ConsentStatus;
+import cz.metacentrum.perun.core.api.exceptions.ConsentNotExistsException;
 import cz.metacentrum.perun.core.api.ConsentHub;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.PerunSession;
@@ -16,6 +19,56 @@ import java.util.List;
  * @author Radoslav Čerhák <r.cerhak@gmail.com>
  */
 public interface ConsentsManagerBl {
+
+	/**
+	 * Get all consents for chosen ConsentHub with the specified status
+	 *
+	 * @param sess
+	 * @param id id of the ConsentHub
+	 * @param status status of the consent
+	 * @return consents for chosen ConsentHub with the specified status
+	 */
+	List<Consent> getConsentsForConsentHub(PerunSession sess, int id, ConsentStatus status);
+
+	/**
+	 * Get all consents for chosen ConsentHub
+	 *
+	 * @param sess
+	 * @param id id of the ConsentHub
+	 * @return consents for chosen ConsentHub
+	 */
+	List<Consent> getConsentsForConsentHub(PerunSession sess, int id);
+
+	/**
+	 * Get all consents for chosen User with the specified status
+	 *
+	 * @param sess
+	 * @param id id of the User
+	 * @param status status of the consent
+	 * @return consents for chosen User with the specified status
+	 */
+	List<Consent> getConsentsForUser(PerunSession sess, int id, ConsentStatus status);
+
+	/**
+	 * Get all consents for chosen User
+	 *
+	 * @param sess
+	 * @param id id of the user
+	 * @return consents for chosen User
+	 */
+	List<Consent> getConsentsForUser(PerunSession sess, int id);
+
+	/**
+	 * Get consent object with specified id
+	 *
+	 * @param sess
+	 * @param id id of desired consent object
+	 * @return consent object with specified id
+	 * @throws ConsentNotExistsException thrown if consent with the id doesn't exist
+	 */
+	Consent getConsentById(PerunSession sess, int id) throws ConsentNotExistsException;
+
+	void checkConsentExists(PerunSession sess, Consent consent) throws ConsentNotExistsException;
 
 	/**
 	 * Get list of all Consent Hubs
