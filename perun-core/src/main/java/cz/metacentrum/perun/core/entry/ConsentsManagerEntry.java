@@ -137,7 +137,7 @@ public class ConsentsManagerEntry implements ConsentsManager {
 	}
 
 	@Override
-	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id, ConsentStatus status) throws PrivilegeException {
+	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id, ConsentStatus status) throws PrivilegeException, ConsentHubNotExistsException {
 		Utils.checkPerunSession(sess);
 
 		ConsentHub consentHub = getPerunBl().getConsentsManagerBl().getConsentHubById(sess, id);
@@ -151,7 +151,7 @@ public class ConsentsManagerEntry implements ConsentsManager {
 	}
 
 	@Override
-	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id) throws PrivilegeException {
+	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id) throws PrivilegeException, ConsentHubNotExistsException {
 		Utils.checkPerunSession(sess);
 
 		ConsentHub consentHub = getPerunBl().getConsentsManagerBl().getConsentHubById(sess, id);
@@ -194,6 +194,7 @@ public class ConsentsManagerEntry implements ConsentsManager {
 			throw new PrivilegeException("getConsentsForUser");
 		}
 		List<Consent> consents = consentsManagerBl.getConsentsForUser(sess, id);
+		System.out.println(consents);
 		consents.removeIf(consent -> !AuthzResolver.authorizedInternal(sess, "getConsentsForUser_Id_policy", consent.getConsentHub().getFacilities().get(0), user));
 
 		return consents;

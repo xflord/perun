@@ -81,7 +81,7 @@ public class ConsentsManagerEntryIntegrationTest extends AbstractPerunIntegratio
 		Facility facility = setUpFacility();
 
 		Consent consent = new Consent(-1, user.getId(), perun.getConsentsManager().getConsentHubByName(sess, facility.getName()), new ArrayList<>());
-		consent = perun.getConsentsManagerBl().deleteConsent(sess, consent);
+		perun.getConsentsManagerBl().deleteConsent(sess, consent);
 		perun.getConsentsManagerBl().getConsentById(sess, consent.getId());
 
 	}
@@ -126,6 +126,7 @@ public class ConsentsManagerEntryIntegrationTest extends AbstractPerunIntegratio
 
 		perun.getConsentsManagerBl().createConsent(sess, consent1);
 		perun.getConsentsManagerBl().createConsent(sess, consent2);
+
 
 		assertEquals(2, consentsManagerEntry.getConsentsForUser(sess, user.getId()).size());
 		assertEquals(2, consentsManagerEntry.getConsentsForUser(sess, user.getId(), ConsentStatus.UNSIGNED).size());

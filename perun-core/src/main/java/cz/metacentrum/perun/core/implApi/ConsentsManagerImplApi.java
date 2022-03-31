@@ -30,7 +30,7 @@ public interface ConsentsManagerImplApi {
 	 * @return created consent
 	 * @throws IllegalArgumentException if consent is null
 	 */
-	Consent createConsent(PerunSession perunSession, Consent consent) throws ConsentExistsException, UserNotExistsException, PrivilegeException, ConsentNotExistsException, ConsentHubNotExistsException;
+	Consent createConsent(PerunSession perunSession, Consent consent) throws ConsentExistsException, UserNotExistsException, PrivilegeException, ConsentHubNotExistsException, ConsentNotExistsException;
 
 	/**
 	 * Delete consent from the database.
