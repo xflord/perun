@@ -3,6 +3,7 @@ package cz.metacentrum.perun.core.impl;
 import cz.metacentrum.perun.core.api.AttributeDefinition;
 import cz.metacentrum.perun.core.api.BeansUtils;
 import cz.metacentrum.perun.core.api.Consent;
+import cz.metacentrum.perun.core.api.User;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.ConsentHub;
 import cz.metacentrum.perun.core.api.ConsentStatus;
@@ -10,6 +11,8 @@ import cz.metacentrum.perun.core.api.exceptions.ConsentNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ConsistencyErrorException;
 import cz.metacentrum.perun.core.api.PerunSession;
 import cz.metacentrum.perun.core.api.exceptions.ConsentHubNotExistsException;
+import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
+import cz.metacentrum.perun.core.api.exceptions.UserNotExistsException;
 import cz.metacentrum.perun.core.implApi.ConsentsManagerImplApi;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.exceptions.ConsentHubAlreadyRemovedException;
@@ -58,8 +61,6 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 		return c;
 	};
 
-	final static Logger log = LoggerFactory.getLogger(ConsentsManagerImpl.class);
-
 	private static JdbcPerunTemplate jdbc;
 
 	protected final static String consentHubMappingSelectQuery = "consent_hubs.id as consent_hubs_id, consent_hubs.name as consent_hubs_name, consent_hubs.enforce_consents as consent_hubs_enforce_consents, " +
@@ -88,17 +89,28 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	}
 
 	@Override
-	public Consent createConsent(PerunSession perunSession, Consent consent) {
+	public Consent createConsent(PerunSession perunSession, Consent consent) throws UserNotExistsException, PrivilegeException, ConsentNotExistsException, ConsentHubNotExistsException, ConsentExistsException {
+		// Check if consent already exists
+		if(consentExists(perunSession, consent)){
+			throw new ConsentExistsException("Consent already exists.");
+		}
+
+		// Remove UNSIGNED consents from consent hub
+		for (Consent c: getConsentsForUserAndConsentHub(perunSession, consent.getUserId(), consent.getConsentHub().getId(), ConsentStatus.UNSIGNED)) {
+			deleteConsent(perunSession, c);
+		}
+
 		try {
 			int newId = Utils.getNewId(jdbc, "consents_id_seq");
 
 			jdbc.update("insert into consents(id, user_id, consent_hub_id, consent_status, created_at, created_by, modified_at, modified_by, created_by_uid, modified_by_uid) " +
 					"values (?,?,?,?,"+Compatibility.getSysdate()+",?,"+Compatibility.getSysdate()+",?,?,?)", newId, consent.getUserId(),
-				consent.getConsentHub().getId(), "UNSIGNED", perunSession.getPerunPrincipal().getActor(), perunSession.getPerunPrincipal().getActor(),
+				consent.getConsentHub().getId(), ConsentStatus.UNSIGNED, perunSession.getPerunPrincipal().getActor(), perunSession.getPerunPrincipal().getActor(),
 				perunSession.getPerunPrincipal().getUserId(), perunSession.getPerunPrincipal().getUserId());
-
 			log.info("Consent {} created.", consent);
 			consent.setId(newId);
+
+			consent.setAttributes(getAttrDefsForConsent(perunSession, consent.getId()));
 
 			return consent;
 		} catch (Exception e){
@@ -107,11 +119,16 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	}
 
 	@Override
-	public void deleteConsent(PerunSession perunSession, Consent consent) {
+	public void deleteConsent(PerunSession perunSession, Consent consent) throws ConsentNotExistsException {
+		// Check if consent exists
+		checkConsentExists(perunSession, consent);
+
 		try {
 			int numberOfRows = jdbc.update("delete from consents where id=?", consent.getId());
 			if (numberOfRows != 1) throw new ConsentNotExistsException(consent);
 			log.info("Consent {} deleted.", consent);
+			consent.setAttributes(null);
+			removeAttrsForConsent(perunSession, consent.getId());
 		} catch (Exception e){
 			throw new InternalErrorException(e);
 		}
@@ -381,6 +398,45 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 			throw new InternalErrorException(err);
 		}
 	}
+@Override
+	public List<Consent> getConsentsForUserAndConsentHub(PerunSession sess, int userId, int consentHubId) throws PrivilegeException, UserNotExistsException, ConsentHubNotExistsException {
+		User user = sess.getPerun().getUsersManager().getUserById(sess, userId);
+		ConsentHub consentHub = sess.getPerun().getConsentsManager().getConsentHubById(sess, consentHubId);
+		if (user == null) throw new UserNotExistsException("User: " + userId);
+		if (consentHub == null) throw new ConsentHubNotExistsException("ConsentHub: " + consentHubId);
 
+		try {
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + " from consents where user_id=? and consent_hub_id=?", CONSENT_MAPPER, userId, consentHubId);
+			if(consents.isEmpty()){
+				throw new ConsentNotExistsException("User " + userId + " has no consents for consent hub " + consentHubId);
+			}
+
+			for (Consent consent : consents) {
+				if (consent != null) {
+					consent.setAttributes(getAttrDefsForConsent(sess, consent.getId()));
+				}
+			}
+			return consents;
+		} catch (EmptyResultDataAccessException ex) {
+			return new ArrayList<>();
+		} catch (Exception e) {
+			throw new InternalErrorException(e);
+		}
+	}
+
+	@Override
+	public List<Consent> getConsentsForUserAndConsentHub(PerunSession sess, int userId, int consentHubId, ConsentStatus status) throws UserNotExistsException, PrivilegeException, ConsentHubNotExistsException {
+		List<Consent> consents = getConsentsForUserAndConsentHub(sess, userId, consentHubId);
+		return consents.stream().filter(c -> c.getStatus().equals(status)).toList();
+	}
+
+
+	private void removeAttrsForConsent(PerunSession sess, int consentId) {
+		try {
+			jdbc.update("delete from consent_attr_defs where consent_id=?", consentId);
+		} catch (RuntimeException err) {
+			throw new InternalErrorException(err);
+		}
+	}
 
 }
