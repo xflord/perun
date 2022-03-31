@@ -2,8 +2,14 @@ package cz.metacentrum.perun.core.bl;
 
 import cz.metacentrum.perun.core.api.Consent;
 import cz.metacentrum.perun.core.api.PerunSession;
+import cz.metacentrum.perun.core.api.User;
 import cz.metacentrum.perun.core.api.exceptions.ConsentExistsException;
+import cz.metacentrum.perun.core.api.exceptions.ConsentHubNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ConsentNotExistsException;
+import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
+import cz.metacentrum.perun.core.api.exceptions.UserNotExistsException;
+
+import java.util.List;
 
 /**
  * Consents BL logic.
@@ -22,7 +28,7 @@ public interface ConsentsManagerBl {
 	 *
 	 * @throws ConsentExistsException if consent already exists
 	 */
-	Consent createConsent(PerunSession perunSession, Consent consent) throws ConsentExistsException;
+	Consent createConsent(PerunSession perunSession, Consent consent) throws ConsentExistsException, UserNotExistsException, PrivilegeException, ConsentHubNotExistsException, ConsentNotExistsException;
 
 	/**
 	 * Deletes consent
@@ -33,4 +39,13 @@ public interface ConsentsManagerBl {
 	 * @throws ConsentNotExistsException if consent doesn't exist
 	 */
 	void deleteConsent(PerunSession sess, Consent consent) throws ConsentNotExistsException;
+
+	/**
+	 * Returns consent by user ID
+	 * @param sess perun session
+	 * @param user user to get consent for
+	 * @return consent list for user
+	 * @throws UserNotExistsException if user doesn't exist
+	 */
+	List<Consent> getConsents(PerunSession sess, User user) throws UserNotExistsException;
 }
