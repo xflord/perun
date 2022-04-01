@@ -88,16 +88,19 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	}
 
 	@Override
-	public Consent createConsent(PerunSession perunSession, Consent consent) throws UserNotExistsException, PrivilegeException, ConsentHubNotExistsException, ConsentExistsException, ConsentNotExistsException {
+	public Consent createConsent(PerunSession perunSession, Consent consent) throws ConsentNotExistsException, ConsentExistsException, ConsentHubNotExistsException {
 		// Check if consent already exists
 		if(consentExists(perunSession, consent)){
 			throw new ConsentExistsException("Consent already exists.");
 		}
 
 		// Remove UNSIGNED consents from consent hub
-		for (Consent c: getConsentsForUserAndConsentHub(perunSession, consent.getUserId(), consent.getConsentHub().getId(), ConsentStatus.UNSIGNED)) {
-			// try block
-			deleteConsent(perunSession, c);
+		try {
+			for (Consent c: getConsentsForUserAndConsentHub(perunSession, consent.getUserId(), consent.getConsentHub().getId(), ConsentStatus.UNSIGNED)) {
+				deleteConsent(perunSession, c);
+			}
+		} catch (UserNotExistsException | PrivilegeException e) {
+			throw new InternalErrorException(e);
 		}
 
 		try {
@@ -217,7 +220,14 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 
 	@Override
 	public void deleteConsentHub(PerunSession perunSession, ConsentHub consentHub) throws ConsentHubAlreadyRemovedException {
-		//TODO: remove all user consents first
+
+		try {
+			for (Consent consent : getConsentsForConsentHub(perunSession, consentHub.getId())) {
+				deleteConsent(perunSession, consent);
+			}
+		} catch (ConsentNotExistsException e) {
+			throw new InternalErrorException(e);
+		}
 
 		try {
 			jdbc.update("delete from consent_hubs_facilities where consent_hub_id=?", consentHub.getId());
