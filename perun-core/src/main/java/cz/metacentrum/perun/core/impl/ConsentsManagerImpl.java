@@ -61,7 +61,9 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 		Consent c = new Consent();
 		c.setId(rs.getInt("consents_id"));
 		c.setUserId(rs.getInt("consents_user_id"));
-		c.setConsentHub(CONSENT_HUB_MAPPER.mapRow(rs, rowNum));
+		ConsentHub consentHub = new ConsentHub();
+		consentHub.setId(rs.getInt("consents_consent_hub_id"));
+		c.setConsentHub(consentHub);
 		c.setStatus(ConsentStatus.valueOf(rs.getString("consents_status")));
 		c.setCreatedAt(rs.getString("consents_created_at"));
 		c.setCreatedBy(rs.getString("consents_created_by"));
@@ -114,8 +116,6 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 			consent.setId(newId);
 
 			//TODO CREATE RELATIONSHIP IN DATABASE for attributes
-
-			consent.setAttributes(getAttrDefsForConsent(perunSession, consent.getId()));
 
 			return consent;
 		} catch (Exception e){
@@ -274,15 +274,8 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	@Override
 	public List<Consent> getAllConsents(PerunSession sess) {
 		try {
-			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingSelectQuery +
-				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id ", CONSENT_MAPPER);
-			for (Consent consent : consents) {
-				if (consent != null) {
-					consent.getConsentHub().setFacilities(getFacilitiesForConsentHub(consent.getConsentHub()));
-					consent.setAttributes(getAttrDefsForConsent(sess, consent.getId()));
-				}
-			}
-			return consents;
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + " from consents ", CONSENT_MAPPER);
+			return fillConsentsWithData(sess, consents);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ArrayList<>();
 		} catch (RuntimeException err) {
@@ -293,15 +286,8 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	@Override
 	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id, ConsentStatus status) {
 		try {
-			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingSelectQuery +
-				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.consent_hub_id=? and consents.status=?::consent_status ", CONSENT_MAPPER, id, status.toString());
-			for (Consent consent : consents) {
-				if (consent != null) {
-					consent.getConsentHub().setFacilities(getFacilitiesForConsentHub(consent.getConsentHub()));
-					consent.setAttributes(getAttrDefsForConsent(sess, consent.getId()));
-				}
-			}
-			return consents;
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + " from consents where consents.consent_hub_id=? and consents.status=?::consent_status ", CONSENT_MAPPER, id, status.toString());
+			return fillConsentsWithData(sess, consents);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ArrayList<>();
 		} catch (RuntimeException err) {
@@ -312,15 +298,8 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	@Override
 	public List<Consent> getConsentsForConsentHub(PerunSession sess, int id) {
 		try {
-			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingSelectQuery +
-				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.consent_hub_id=? ", CONSENT_MAPPER, id);
-			for (Consent consent : consents) {
-				if (consent != null) {
-					consent.getConsentHub().setFacilities(getFacilitiesForConsentHub(consent.getConsentHub()));
-					consent.setAttributes(getAttrDefsForConsent(sess, consent.getId()));
-				}
-			}
-			return consents;
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + " from consents where consents.consent_hub_id=? ", CONSENT_MAPPER, id);
+			return fillConsentsWithData(sess, consents);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ArrayList<>();
 		} catch (RuntimeException err) {
@@ -331,15 +310,8 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	@Override
 	public List<Consent> getConsentsForUser(PerunSession sess, int id, ConsentStatus status) {
 		try {
-			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingSelectQuery +
-				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.user_id=? and consents.status=?::consent_status ", CONSENT_MAPPER, id, status.toString());
-			for (Consent consent : consents) {
-				if (consent != null) {
-					consent.getConsentHub().setFacilities(getFacilitiesForConsentHub(consent.getConsentHub()));
-					consent.setAttributes(getAttrDefsForConsent(sess, consent.getId()));
-				}
-			}
-			return consents;
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + " from consents where consents.user_id=? and consents.status=?::consent_status ", CONSENT_MAPPER, id, status.toString());
+			return fillConsentsWithData(sess, consents);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ArrayList<>();
 		} catch (RuntimeException err) {
@@ -350,15 +322,8 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	@Override
 	public List<Consent> getConsentsForUser(PerunSession sess, int id) {
 		try {
-			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + ", " + consentHubMappingSelectQuery +
-				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id " + " where consents.user_id=? ", CONSENT_MAPPER, id);
-			for (Consent consent : consents) {
-				if (consent != null) {
-					consent.getConsentHub().setFacilities(getFacilitiesForConsentHub(consent.getConsentHub()));
-					consent.setAttributes(getAttrDefsForConsent(sess, consent.getId()));
-				}
-			}
-			return consents;
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + " from consents where consents.user_id=? ", CONSENT_MAPPER, id);
+			return fillConsentsWithData(sess, consents);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ArrayList<>();
 		} catch (RuntimeException err) {
@@ -369,13 +334,9 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 	@Override
 	public Consent getConsentById(PerunSession sess, int id) throws ConsentNotExistsException {
 		try {
-			Consent consent = jdbc.queryForObject("select " + consentMappingSelectQuery + ", " + consentHubMappingSelectQuery +
-				" from consents left join consent_hubs on consents.consent_hub_id=consent_hubs.id" + " where consents.id=? ", CONSENT_MAPPER, id);
-			if (consent != null) {
-				consent.getConsentHub().setFacilities(getFacilitiesForConsentHub(consent.getConsentHub()));
-				consent.setAttributes(getAttrDefsForConsent(sess, id));
-			}
-			return consent;
+			Consent consent = jdbc.queryForObject("select " + consentMappingSelectQuery + " from consents where consents.id=? ", CONSENT_MAPPER, id);
+			if (consent == null) throw new ConsentNotExistsException("Consent with id:" + id + "does not exist.");
+			return fillConsentsWithData(sess, List.of(consent)).get(0);
 		} catch (EmptyResultDataAccessException ex) {
 			throw new ConsentNotExistsException(ex);
 		} catch (RuntimeException err) {
@@ -424,20 +385,29 @@ public class ConsentsManagerImpl implements ConsentsManagerImplApi {
 		if (consentHub == null) throw new ConsentHubNotExistsException("ConsentHub: " + consentHubId);
 
 		try {
-			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery +  ", " + consentHubMappingSelectQuery + " from consents  left join consent_hubs on consents.consent_hub_id=consent_hubs.id  where user_id=? and consent_hub_id=?", CONSENT_MAPPER, userId, consentHubId);
+			List<Consent> consents = jdbc.query("select " + consentMappingSelectQuery + " from consents where user_id=? and consent_hub_id=?", CONSENT_MAPPER, userId, consentHubId);
 
-			for (Consent consent : consents) {
-				if (consent != null) {
-					consent.getConsentHub().setFacilities(getFacilitiesForConsentHub(consent.getConsentHub()));
-					consent.setAttributes(getAttrDefsForConsent(sess, consent.getId()));
-				}
-			}
-			return consents;
+			return fillConsentsWithData(sess, consents);
 		} catch (EmptyResultDataAccessException ex) {
 			return new ArrayList<>();
 		} catch (Exception e) {
 			throw new InternalErrorException(e);
 		}
+	}
+
+	private List<Consent> fillConsentsWithData(PerunSession sess, List<Consent> consents) {
+		for (Consent consent : consents) {
+			if (consent != null) {
+				try {
+					consent.setConsentHub(getConsentHubById(sess, consent.getConsentHub().getId()));
+				} catch (ConsentHubNotExistsException e) {
+					throw new InternalErrorException(e);
+				}
+				consent.getConsentHub().setFacilities(getFacilitiesForConsentHub(consent.getConsentHub()));
+				consent.setAttributes(getAttrDefsForConsent(sess, consent.getId()));
+			}
+		}
+		return consents;
 	}
 
 	@Override
