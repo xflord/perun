@@ -3,12 +3,10 @@ package cz.metacentrum.perun.core.api.exceptions;
 import cz.metacentrum.perun.core.api.ConsentHub;
 
 /**
- * Thrown when the Consent Hub has not been found in the database
- *
- * @author Jakub Hejda <Jakub.Hejda@cesnet.cz>
+ * Thrown when trying to create consent hub with name that already exists.
+ * @author Johana Supikova <xsupikov@fi.muni.cz>
  */
-public class ConsentHubNotExistsException extends EntityNotExistsException{
-
+public class ConsentHubExistsException extends EntityExistsException {
 	static final long serialVersionUID = 0;
 
 	private ConsentHub consentHub;
@@ -17,7 +15,7 @@ public class ConsentHubNotExistsException extends EntityNotExistsException{
 	 * Simple constructor with a message
 	 * @param message message with details about the cause
 	 */
-	public ConsentHubNotExistsException(String message) {
+	public ConsentHubExistsException(String message) {
 		super(message);
 	}
 
@@ -26,7 +24,7 @@ public class ConsentHubNotExistsException extends EntityNotExistsException{
 	 * @param message message with details about the cause
 	 * @param cause Throwable that caused throwing of this exception
 	 */
-	public ConsentHubNotExistsException(String message, Throwable cause) {
+	public ConsentHubExistsException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
@@ -34,22 +32,22 @@ public class ConsentHubNotExistsException extends EntityNotExistsException{
 	 * Constructor with a Throwable object
 	 * @param cause Throwable that caused throwing of this exception
 	 */
-	public ConsentHubNotExistsException(Throwable cause) {
+	public ConsentHubExistsException(Throwable cause) {
 		super(cause);
 	}
 
 	/**
-	 * Constructor with the consent hub that does not exist
-	 * @param consentHub the consent hub
+	 * Constructor with the consentHub
+	 * @param consentHub consentHub that already exists
 	 */
-	public ConsentHubNotExistsException(ConsentHub consentHub) {
+	public ConsentHubExistsException(ConsentHub consentHub) {
 		super(consentHub.toString());
 		this.consentHub = consentHub;
 	}
 
 	/**
-	 * Getter for the consent hub that does not exist
-	 * @return the consent hub that does not exist
+	 * Getter for the consentHub
+	 * @return consentHub that already exists
 	 */
 	public ConsentHub getConsentHub() {
 		return this.consentHub;

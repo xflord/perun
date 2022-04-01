@@ -3,13 +3,14 @@ package cz.metacentrum.perun.core.api.exceptions;
 import cz.metacentrum.perun.core.api.Consent;
 
 /**
- * This exception is thrown when trying to delete
- * a consent which is not in the database.
+ * Thrown when trying to retrieve a consent that doesn't exist from the database
  *
- * @author Matej Hakoš <492968@mail.muni.cz>
+ * @author David Flor <493294@mail.muni.cz>
  */
-public class ConsentNotExistsException extends PerunException {
+public class ConsentNotExistsException extends EntityNotExistsException {
 	static final long serialVersionUID = 0;
+
+	private Consent consent;
 
 	/**
 	 * Simple constructor with a message
@@ -37,11 +38,19 @@ public class ConsentNotExistsException extends PerunException {
 	}
 
 	/**
-	 * Constructor with consent
-	 * @param consent consent
+	 * Constructor with the consent that does not exist
+	 * @param consent the consent
 	 */
 	public ConsentNotExistsException(Consent consent) {
 		super(consent.toString());
+		this.consent = consent;
+	}
 
+	/**
+	 * Getter for the consent that doesn't exist
+	 * @return the consent that doesn't exist
+	 */
+	public Consent getConsent() {
+		return this.consent;
 	}
 }

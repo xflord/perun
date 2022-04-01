@@ -617,7 +617,7 @@ public class UsersManagerBlImpl implements UsersManagerBl {
 		}
 
 		//Remove all user's consents
-		for (Consent consent : getPerunBl().getConsentsManagerBl().getConsents(sess, user)) {
+		for (Consent consent : getPerunBl().getConsentsManagerBl().getConsentsForUser(sess, user.getId())) {
 			getPerunBl().getConsentsManagerBl().deleteConsent(sess, consent);
 		}
 
