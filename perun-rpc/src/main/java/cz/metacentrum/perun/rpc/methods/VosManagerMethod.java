@@ -267,6 +267,7 @@ public enum VosManagerMethod implements ManagerMethod {
 	 * @param group int GROUP <code>id</code>
 	 * @param attrNames List<String> list with names of attributes that should be find.
 	 * @param searchString String Text to search by
+	 * @param memberCandidates List<MemberCandidates> of MemberCandidates which to exclude from the final list
 	 * @throw GroupNotExistsException When <code>id</code> of GROUP doesn't match any existing GROUP.
 	 * @return List<MemberCandidate> List of MemberCandidates
 	 */
@@ -277,12 +278,14 @@ public enum VosManagerMethod implements ManagerMethod {
 				return ac.getVosManager().getCompleteCandidates(ac.getSession(),
 						ac.getVoById(parms.readInt("vo")),
 						parms.readList("attrNames", String.class),
-						parms.readString("searchString"));
+						parms.readString("searchString"),
+						parms.readList("memberCandidates", MemberCandidate.class));
 			} else {
 				return ac.getVosManager().getCompleteCandidates(ac.getSession(),
 						ac.getGroupById(parms.readInt("group")),
 						parms.readList("attrNames", String.class),
-						parms.readString("searchString"));
+						parms.readString("searchString"),
+						parms.readList("memberCandidates", MemberCandidate.class));
 			}
 		}
 	},

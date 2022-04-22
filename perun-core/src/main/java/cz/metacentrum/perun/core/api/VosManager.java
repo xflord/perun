@@ -212,12 +212,13 @@ public interface VosManager {
 	 * @param vo vo to be used
 	 * @param attrNames names of attributes that will be found
 	 * @param searchString depends on the extSource of the Group, could by part of the name, email or something like that.
+	 * @param exclude list of MemberCandidates which to exclude from the final list
 	 * @return list of MemberCandidates for given vo.
 	 * @throws InternalErrorException internal error
 	 * @throws VoNotExistsException when vo does not exist
 	 * @throws PrivilegeException privilege exception
 	 */
-	List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, List<String> attrNames, String searchString) throws VoNotExistsException, PrivilegeException;
+	List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, List<String> attrNames, String searchString, List<MemberCandidate> exclude) throws VoNotExistsException, PrivilegeException;
 
 	/**
 	 * Finds MemberCandidates who can join the Group.
@@ -226,12 +227,13 @@ public interface VosManager {
 	 * @param group group to be used
 	 * @param attrNames names of attributes that will be found
 	 * @param searchString depends on the extSource of the Group, could by part of the name, email or something like that.
+	 * @param exclude list of MemberCandidates which to exclude from the final list
 	 * @return list of MemberCandidates for given vo.
 	 * @throws InternalErrorException internal error
 	 * @throws GroupNotExistsException when group does not exist
 	 * @throws PrivilegeException privilege exception
 	 */
-	List<MemberCandidate> getCompleteCandidates(PerunSession sess, Group group, List<String> attrNames, String searchString) throws GroupNotExistsException, PrivilegeException;
+	List<MemberCandidate> getCompleteCandidates(PerunSession sess, Group group, List<String> attrNames, String searchString, List<MemberCandidate> exclude) throws GroupNotExistsException, PrivilegeException;
 
 
 	/**
@@ -663,4 +665,5 @@ public interface VosManager {
 	 * @throws PrivilegeException if not authorized
 	 */
 	List<Vo> getParentVos(PerunSession sess, int memberVoId) throws VoNotExistsException, PrivilegeException;
+
 }

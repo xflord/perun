@@ -182,10 +182,11 @@ public interface VosManagerBl {
 	 * @param vo vo to be used
 	 * @param attrNames name of attributes to be searched
 	 * @param searchString depends on the extSource of the Vo, could by part of the name, email or something like that.
+	 *@param exclude list of MemberCandidates which to exclude from the final list
 	 * @return list of memberCandidates who match the searchString
 	 * @throws InternalErrorException internal error
 	 */
-	List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, List<String> attrNames, String searchString);
+	List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, List<String> attrNames, String searchString, List<MemberCandidate> exclude);
 
 	/**
 	 * Finds MemberCandidates who can join the Group. If the given vo is not null, it searches only
@@ -197,9 +198,10 @@ public interface VosManagerBl {
 	 * @param attrNames name of attributes to be searched
 	 * @param searchString depends on the extSource of the Vo, could by part of the name, email or something like that.
 	 * @param extSources extSources used to find candidates and possibly users
+	 * @param exclude list of MemberCandidates which to exclude from the final list
 	 * @return list of memberCandidates who match the searchString
 	 */
-	List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, Group group, List<String> attrNames, String searchString, List<ExtSource> extSources);
+	List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, Group group, List<String> attrNames, String searchString, List<ExtSource> extSources, List<MemberCandidate> exclude);
 
 	/**
 	 * Get list of user administrators of specific vo for specific role.

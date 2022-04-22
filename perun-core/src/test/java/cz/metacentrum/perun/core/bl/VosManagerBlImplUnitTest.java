@@ -56,7 +56,7 @@ public class VosManagerBlImplUnitTest {
 			.thenReturn(richUser);
 
 		List<MemberCandidate> memberCandidates = vosManagerBlSpy.createMemberCandidates(sess, Collections.emptyList(),
-			vo, group, Arrays.asList(candidate1, candidate2), Collections.emptyList());
+			vo, group, Arrays.asList(candidate1, candidate2), Collections.emptyList(), Collections.emptyList());
 		assertThat(memberCandidates).hasSize(1);
 	}
 
@@ -68,7 +68,7 @@ public class VosManagerBlImplUnitTest {
 			.thenReturn(Collections.emptyList());
 
 		List<MemberCandidate> memberCandidates = vosManagerBlSpy.createMemberCandidates(sess, Collections.emptyList(),
-			vo, group, Arrays.asList(candidate1), Collections.emptyList());
+			vo, group, Arrays.asList(candidate1), Collections.emptyList(), Collections.emptyList());
 		assertThat(memberCandidates).hasSize(1);
 		assertThat(memberCandidates.get(0).getCandidate()).isEqualTo(candidate1);
 		assertThat(memberCandidates.get(0).getRichUser()).isNull();
@@ -87,7 +87,7 @@ public class VosManagerBlImplUnitTest {
 			.thenReturn(richUser);
 
 		List<MemberCandidate> memberCandidates = vosManagerBlSpy.createMemberCandidates(sess, Collections.emptyList(),
-			vo, group, Arrays.asList(candidate1), Collections.emptyList());
+			vo, group, Arrays.asList(candidate1), Collections.emptyList(), Collections.emptyList());
 		assertThat(memberCandidates).hasSize(1);
 		assertThat(memberCandidates.get(0).getRichUser()).isEqualTo(candidate1);
 		assertThat(memberCandidates.get(0).getCandidate()).isNull();

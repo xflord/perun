@@ -68,6 +68,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -75,9 +76,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * VosManager business logic
@@ -563,24 +566,31 @@ public class VosManagerBlImpl implements VosManagerBl {
 	}
 
 	@Override
-	public List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, List<String> attrNames, String searchString) {
+	public List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, List<String> attrNames, String searchString, List<MemberCandidate> exclude) {
 		List<ExtSource> extSources = getPerunBl().getExtSourcesManagerBl().getVoExtSources(sess, vo);
 		List<RichUser> richUsers = getRichUsersForMemberCandidates(sess, attrNames, searchString);
 		List<Candidate> candidates = findCandidates(sess, vo, searchString, 0, extSources, false);
 
-		return createMemberCandidates(sess, richUsers, vo, candidates, attrNames);
+		if (exclude == null) {
+			exclude = new ArrayList<>();
+		}
+
+		return createMemberCandidates(sess, richUsers, vo, candidates, attrNames, exclude);
 	}
 
 	@Override
-	public List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, Group group, List<String> attrNames, String searchString, List<ExtSource> extSources) {
+	public List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, Group group, List<String> attrNames, String searchString, List<ExtSource> extSources, List<MemberCandidate> exclude) {
 		List<RichUser> richUsers = getRichUsersForMemberCandidates(sess, vo, attrNames, searchString, extSources);
 		List<Candidate> candidates = findCandidates(sess, group, searchString, extSources, false);
+		if (exclude == null) {
+			exclude = new ArrayList<>();
+		}
 
 		if (vo == null) {
 			vo = getPerunBl().getGroupsManagerBl().getVo(sess, group);
 		}
 
-		return createMemberCandidates(sess, richUsers, vo, group, candidates, attrNames);
+		return createMemberCandidates(sess, richUsers, vo, group, candidates, attrNames, exclude);
 	}
 
 	/**
@@ -1151,8 +1161,8 @@ public class VosManagerBlImpl implements VosManagerBl {
 	 * @return list of MemberCandidates for given RichUsers, vo and candidates
 	 * @throws InternalErrorException internal error
 	 */
-	private List<MemberCandidate> createMemberCandidates(PerunSession sess, List<RichUser> users, Vo vo, List<Candidate> candidates, List<String> attrNames) {
-		return createMemberCandidates(sess, users, vo, null, candidates, attrNames);
+	private List<MemberCandidate> createMemberCandidates(PerunSession sess, List<RichUser> users, Vo vo, List<Candidate> candidates, List<String> attrNames, List<MemberCandidate> exclude) {
+		return createMemberCandidates(sess, users, vo, null, candidates, attrNames, exclude);
 	}
 
 	/**
@@ -1181,24 +1191,37 @@ public class VosManagerBlImpl implements VosManagerBl {
 	 * @return list of MemberCandidates for given RichUsers, group and candidates
 	 * @throws InternalErrorException internal error
 	 */
-	public List<MemberCandidate> createMemberCandidates(PerunSession sess, List<RichUser> users, Vo vo, Group group, List<Candidate> candidates, List<String> attrNames) {
+	public List<MemberCandidate> createMemberCandidates(PerunSession sess, List<RichUser> users, Vo vo, Group group, List<Candidate> candidates, List<String> attrNames, List<MemberCandidate> exclude) {
 		List<MemberCandidate> memberCandidates = new ArrayList<>();
 		Set<Integer> allUsersIds = new HashSet<>();
 		int userId;
+		exclude = exclude.stream().filter(Objects::nonNull).toList();
+		List<UserExtSource> excludedUES = new ArrayList<>(new ArrayList<>(exclude.stream()
+			.map(MemberCandidate::getRichUser).filter(Objects::nonNull)
+			.map(RichUser::getUserExtSources).toList().stream().flatMap(Collection::stream).toList()));
+		List<UserExtSource> excludedCandidatesUES = exclude.stream()
+			.map(MemberCandidate::getCandidate).filter(Objects::nonNull)
+			.map(Candidate::getUserExtSources).toList().stream().flatMap(Collection::stream).toList();
+		excludedUES.addAll(excludedCandidatesUES);
 
 		// try to find matching RichUser for candidates
 		for (Candidate candidate : candidates) {
+			if (candidate.getUserExtSources().stream().anyMatch(excludedUES::contains)) {
+				continue;
+			}
 			MemberCandidate mc = new MemberCandidate();
 
 			try {
 				User user = getPerunBl().getUsersManagerBl().getUserByUserExtSources(sess, candidate.getUserExtSources());
 				userId = user.getId();
 
-				// check if user already exists in the list
+				// check if user already exists in the list or is excluded
 				if(!allUsersIds.contains(userId)) {
 					RichUser richUser = getPerunBl().getUsersManagerBl().convertUserToRichUserWithAttributesByNames(sess, user, attrNames);
 					mc.setRichUser(richUser);
-					memberCandidates.add(mc);
+					if (richUser.getUserExtSources().stream().noneMatch(excludedUES::contains)) {
+						memberCandidates.add(mc);
+					}
 				}
 				allUsersIds.add(userId);
 
@@ -1216,7 +1239,8 @@ public class VosManagerBlImpl implements VosManagerBl {
 
 		// create MemberCandidates for RichUsers without candidate
 		for (RichUser richUser : users) {
-			if (!foundRichUsers.contains(richUser)) {
+
+			if (!foundRichUsers.contains(richUser) && richUser.getUserExtSources().stream().noneMatch(excludedUES::contains)) {
 				MemberCandidate mc = new MemberCandidate();
 				mc.setRichUser(richUser);
 				memberCandidates.add(mc);

@@ -291,7 +291,7 @@ public class VosManagerEntry implements VosManager {
 	}
 
 	@Override
-	public List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, List<String> attrNames, String searchString) throws VoNotExistsException, PrivilegeException {
+	public List<MemberCandidate> getCompleteCandidates(PerunSession sess, Vo vo, List<String> attrNames, String searchString, List<MemberCandidate> exclude) throws VoNotExistsException, PrivilegeException {
 		Utils.notNull(searchString, "searchString");
 		Utils.notNull(sess, "sess");
 		Utils.notNull(vo, "vo");
@@ -304,7 +304,7 @@ public class VosManagerEntry implements VosManager {
 			throw new PrivilegeException(sess, "getCompleteCandidates");
 		}
 
-		List<MemberCandidate> candidates = vosManagerBl.getCompleteCandidates(sess, vo, attrNames, searchString);
+		List<MemberCandidate> candidates = vosManagerBl.getCompleteCandidates(sess, vo, attrNames, searchString, exclude);
 
 		List<ExtSource> voExtSources = perunBl.getExtSourcesManagerBl().getVoExtSources(sess, vo);
 
@@ -312,7 +312,7 @@ public class VosManagerEntry implements VosManager {
 	}
 
 	@Override
-	public List<MemberCandidate> getCompleteCandidates(PerunSession sess, Group group, List<String> attrNames, String searchString) throws GroupNotExistsException, PrivilegeException {
+	public List<MemberCandidate> getCompleteCandidates(PerunSession sess, Group group, List<String> attrNames, String searchString, List<MemberCandidate> exclude) throws GroupNotExistsException, PrivilegeException {
 		Utils.notNull(searchString, "searchString");
 		Utils.notNull(sess, "sess");
 		Utils.notNull(group, "group");
@@ -336,7 +336,7 @@ public class VosManagerEntry implements VosManager {
 			throw new PrivilegeException(sess, "getCompleteCandidates");
 		}
 
-		List<MemberCandidate> candidates = vosManagerBl.getCompleteCandidates(sess, vo, group, attrNames, searchString, extSources);
+		List<MemberCandidate> candidates = vosManagerBl.getCompleteCandidates(sess, vo, group, attrNames, searchString, extSources, exclude);
 
 		return filterMemberCandidates(sess, candidates, extSources);
 	}

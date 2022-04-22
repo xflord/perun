@@ -14,6 +14,7 @@ import cz.metacentrum.perun.core.api.GroupsManager;
 import cz.metacentrum.perun.core.api.GroupsOrderColumn;
 import cz.metacentrum.perun.core.api.GroupsPageQuery;
 import cz.metacentrum.perun.core.api.Member;
+import cz.metacentrum.perun.core.api.MemberCandidate;
 import cz.metacentrum.perun.core.api.MemberGroupStatus;
 import cz.metacentrum.perun.core.api.MembershipType;
 import cz.metacentrum.perun.core.api.Paginated;
@@ -6125,6 +6126,30 @@ public class GroupsManagerEntryIntegrationTest extends AbstractPerunIntegrationT
 		}
 	}
 
+/*	@Test
+	public void excludeMemberCandidatesTest() throws Exception {
+		System.out.println(CLASS_NAME + "excludeMemberCandidatesTest");
+
+		Vo vo = setUpVo();
+		ExtSource es = perun.getExtSourcesManagerBl().createExtSource(sess, extSource, null);
+
+		perun.getExtSourcesManager().addExtSource(sess, vo, es);
+		Member member = setUpMember(vo);
+		Group group = setUpGroup(vo);
+		Candidate candidate = setUpCandidate(12);
+
+		List<String> attrNames = new ArrayList<>(List.of("urn:perun:user:attribute-def:def:preferredMail", "urn:perun:user:attribute-def:def:organization"));
+		List<MemberCandidate> exclude = perun.getVosManagerBl().getCompleteCandidates(sess, vo, group, attrNames, "a", List.of(es), new ArrayList<>());
+		System.out.println(exclude);
+		exclude.add(null);
+		List<MemberCandidate> members = perun.getVosManager().getCompleteCandidates(sess, group, attrNames, "a", exclude);
+		System.out.println(members);
+
+
+
+	}*/
+
+
 	// PRIVATE METHODS -------------------------------------------------------------
 
 	private Vo setUpVo() throws Exception {
@@ -6169,7 +6194,7 @@ public class GroupsManagerEntryIntegrationTest extends AbstractPerunIntegrationT
 		String extLogin = Long.toHexString(Double.doubleToLongBits(Math.random()));              // his login in external source
 
 		Candidate candidate = new Candidate();  //Mockito.mock(Candidate.class);
-		candidate.setFirstName(userFirstName);
+		candidate.setFirstName("a");
 		candidate.setId(0+i);
 		candidate.setMiddleName("");
 		candidate.setLastName(userLastName);

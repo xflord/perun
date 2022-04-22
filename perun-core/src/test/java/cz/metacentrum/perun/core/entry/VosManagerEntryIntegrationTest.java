@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 import static cz.metacentrum.perun.core.blImpl.VosManagerBlImpl.A_MEMBER_DEF_MEMBER_ORGANIZATIONS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.InstanceOfAssertFactories.CLASS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -653,7 +654,7 @@ public class VosManagerEntryIntegrationTest extends AbstractPerunIntegrationTest
 		Member member = perun.getMembersManagerBl().createMember(sess, myVo, candidate);
 
 		List<MemberCandidate> completeCandidates = perun.getVosManagerBl()
-			.getCompleteCandidates(sess, myVo, returnedGroup, null, "jan", Arrays.asList(es));
+			.getCompleteCandidates(sess, myVo, returnedGroup, null, "jan", Arrays.asList(es), new ArrayList<>());
 
 		List<RichUser> usersOfCompleteCandidates = completeCandidates.stream()
 			.map(MemberCandidate::getRichUser)
@@ -692,7 +693,7 @@ public class VosManagerEntryIntegrationTest extends AbstractPerunIntegrationTest
 			.getRichUser(sess, perun.getUsersManagerBl().createUser(sess, candidate));
 
 		List<MemberCandidate> completeCandidates = perun.getVosManagerBl()
-			.getCompleteCandidates(sess, null, returnedGroup, null, "jan", Arrays.asList(es));
+			.getCompleteCandidates(sess, null, returnedGroup, null, "jan", Arrays.asList(es), new ArrayList<>());
 
 		List<RichUser> usersOfCompleteCandidates = completeCandidates.stream()
 			.map(MemberCandidate::getRichUser)
@@ -1008,6 +1009,7 @@ public class VosManagerEntryIntegrationTest extends AbstractPerunIntegrationTest
 		membersExpirationAttribute = perun.getAttributesManagerBl().getAttribute(sess, memberInParentVo, membershipExpirationAttrName);
 		assertThat(membersExpirationAttribute.toString().endsWith("-01-01"));
 	}
+
 
 	// private methods ------------------------------------------------------------------
 

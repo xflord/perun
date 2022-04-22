@@ -2639,6 +2639,16 @@ components:
       in: query
       required: true
 
+    excludedMemberCandidates:
+      name: "memberCandidates[]"
+      description: "list of MemberCandidates which to exclude from the search"
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/MemberCandidate"
+      in: query
+      required: false
+
     consentHubId:
       name: consentHub
       description: "id of ConsentHub"
@@ -14067,6 +14077,7 @@ paths:
         - $ref: '#/components/parameters/voId'
         - $ref: '#/components/parameters/attrNames'
         - $ref: '#/components/parameters/searchString'
+        - $ref: '#/components/parameters/excludedMemberCandidates'
       responses:
         '200':
           $ref: '#/components/responses/ListOfMemberCandidatesResponse'
@@ -14087,6 +14098,7 @@ paths:
         - $ref: '#/components/parameters/groupId'
         - $ref: '#/components/parameters/attrNames'
         - $ref: '#/components/parameters/searchString'
+        - $ref: '#/components/parameters/excludedMemberCandidates'
       responses:
         '200':
           $ref: '#/components/responses/ListOfMemberCandidatesResponse'
