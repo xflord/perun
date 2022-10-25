@@ -22,7 +22,7 @@ import cz.metacentrum.perun.core.impl.AttributesManagerImpl;
 import cz.metacentrum.perun.core.impl.PerunAppsConfig;
 import cz.metacentrum.perun.core.api.exceptions.ExpiredTokenException;
 import cz.metacentrum.perun.oidc.UserInfoEndpointCall;
-import cz.metacentrum.perun.oidc.UserInfoEndpointResponse;
+import cz.metacentrum.perun.oidc.EndpointResponse;
 import cz.metacentrum.perun.rpc.deserializer.Deserializer;
 import cz.metacentrum.perun.rpc.deserializer.JsonDeserializer;
 import cz.metacentrum.perun.rpc.deserializer.UrlDeserializer;
@@ -111,7 +111,7 @@ public class Api extends HttpServlet {
 	private static final String DELEGATED_EXTSOURCE_NAME = "delegatedExtSourceName";
 	private static final String DELEGATED_EXTSOURCE_TYPE = "delegatedExtSourceType";
 	private static final String LOA = "loa";
-	private static UserInfoEndpointCall userInfoEndpointCall = new UserInfoEndpointCall();
+	private static final UserInfoEndpointCall userInfoEndpointCall = new UserInfoEndpointCall();
 
 	@Override
 	public void init() {
@@ -266,16 +266,18 @@ public class Api extends HttpServlet {
 			}
 			extSourceLoaString = "-1";
 
+			// TADY GENERAL METODA, ktera bude umet vyhodnotit ID token, a oba endpointy
+
 			if (BeansUtils.getCoreConfig().getRequestUserInfoEndpoint()) {
-				UserInfoEndpointResponse userInfoEndpointResponse;
+				EndpointResponse endpointResponse;
 				try {
-					userInfoEndpointResponse = userInfoEndpointCall.getUserInfoEndpointData(req.getHeader(OIDC_ACCESS_TOKEN), iss, additionalInformations);
+					endpointResponse = userInfoEndpointCall.getEndpointData(req.getHeader(OIDC_ACCESS_TOKEN), iss, additionalInformations);
 				} catch (InternalErrorException | ExpiredTokenException ex) {
-					userInfoEndpointResponse = new UserInfoEndpointResponse(null, null);
+					endpointResponse = new EndpointResponse(null, null);
 				}
-				if (isNotEmpty(userInfoEndpointResponse.getSub()) && isNotEmpty(userInfoEndpointResponse.getIssuer())) {
-					extLogin = userInfoEndpointResponse.getSub();
-					extSourceName = userInfoEndpointResponse.getIssuer();
+				if (isNotEmpty(endpointResponse.getSub()) && isNotEmpty(endpointResponse.getIssuer())) {
+					extLogin = endpointResponse.getSub();
+					extSourceName = endpointResponse.getIssuer();
 					extSourceLoaString = "1";
 				}
 			}

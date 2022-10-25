@@ -9,6 +9,7 @@ use LWP::UserAgent;
 use File::Basename;
 use Try::Tiny;
 use Perun::Exception;
+use Data::Dumper;
 
 my $PYTHON = "python3";
 my $MFA_REFS = "https://refeds.org/profile/mfa";
@@ -112,6 +113,7 @@ sub polling
 	for (@i) {
 		my $response = tokenRequest($deviceCode);
 		unless (exists($response->{"error"})) {
+			print Dumper $response;
 			return $response;
 		} else {
 			my $error = $response->{"error"};

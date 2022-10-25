@@ -1,5 +1,8 @@
 package cz.metacentrum.perun.core.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.metacentrum.perun.core.api.Attribute;
 import cz.metacentrum.perun.core.api.AttributeDefinition;
 import cz.metacentrum.perun.core.api.AttributesManager;
@@ -2452,6 +2455,31 @@ public class Utils {
 		raf.close();
 
 		return false;
+	}
+
+	/**
+	 * Parse and verify ID token as described in
+	 * https://www.baeldung.com/java-jwt-token-decode
+	 * @param token id token
+	 * @return user data from parsed id token
+	 * @throws JsonProcessingException if token is invalid
+	 */
+	public static JsonNode parseIdToken(String token, String secretKey) throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		String[] tokenParts = token.split("\\.");
+
+		String header = cipherInput(tokenParts[0], true);
+		String payload = cipherInput(tokenParts[1], true);
+
+		JsonNode headerData = mapper.readTree(header);
+		String algorithm = headerData.get("alg").textValue();
+		SignatureAlgorithm sa = SignatureAlgorithm.valueOf(algorithm);
+		SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), algorithm);
+
+		DefaultJwtSignatureValidator validator = new DefaultJwtSignatureValidator(sa, secretKeySpec);
+		if (!validator.isValid(tokenParts[0] + "." + tokenParts[1], tokenParts[2])) {
+			throw new Exception("Could not verify JWT token integrity!");
+		}
 	}
 
 	/**

@@ -2538,7 +2538,7 @@ public class AuthzResolverBlImpl implements AuthzResolverBl {
 				sess.getPerunPrincipal().getRoles().clear();
 			}
 
-			if (isAuthorizedByMfa(sess)) {
+			if (isMfaTimestampValid(sess)) {
 				sess.getPerunPrincipal().getRoles().putAuthzRole(Role.MFA);
 			}
 		}
@@ -2614,10 +2614,11 @@ public class AuthzResolverBlImpl implements AuthzResolverBl {
 		}
 
 		UserInfoEndpointCall userInfoEndpointCall = new UserInfoEndpointCall();
-		String timestamp = userInfoEndpointCall.getUserInfoEndpointMfaData(accessToken, issuer);
+		getUserOidcInfo
+		String timestamp = userInfoEndpointCall.getUserInfoEndpointData(accessToken, issuer);
 		if (timestamp != null && !timestamp.isEmpty()) {
 			sess.getPerunPrincipal().getAdditionalInformations().put(MFA_TIMESTAMP, timestamp);
-			if (isAuthorizedByMfa(sess)) {
+			if (isMfaTimestampValid(sess)) {
 				sess.getPerunPrincipal().getRoles().putAuthzRole(Role.MFA);
 			}
 		}
@@ -4343,7 +4344,7 @@ public class AuthzResolverBlImpl implements AuthzResolverBl {
 	 * @param sess session
 	 * @return true if principal authorized by MFA in allowed limit, false otherwise
 	 */
-	private static boolean isAuthorizedByMfa(PerunSession sess) {
+	private static boolean isMfaTimestampValid(PerunSession sess) {
 		if (!BeansUtils.getCoreConfig().isEnforceMfa()) {
 			return false;
 		}
