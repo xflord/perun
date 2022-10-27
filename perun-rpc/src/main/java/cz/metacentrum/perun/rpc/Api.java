@@ -21,7 +21,6 @@ import cz.metacentrum.perun.core.blImpl.AttributesManagerBlImpl;
 import cz.metacentrum.perun.core.impl.AttributesManagerImpl;
 import cz.metacentrum.perun.core.impl.PerunAppsConfig;
 import cz.metacentrum.perun.core.api.exceptions.ExpiredTokenException;
-import cz.metacentrum.perun.oidc.UserInfoEndpointCall;
 import cz.metacentrum.perun.oidc.EndpointResponse;
 import cz.metacentrum.perun.rpc.deserializer.Deserializer;
 import cz.metacentrum.perun.rpc.deserializer.JsonDeserializer;
@@ -111,7 +110,7 @@ public class Api extends HttpServlet {
 	private static final String DELEGATED_EXTSOURCE_NAME = "delegatedExtSourceName";
 	private static final String DELEGATED_EXTSOURCE_TYPE = "delegatedExtSourceType";
 	private static final String LOA = "loa";
-	private static final UserInfoEndpointCall userInfoEndpointCall = new UserInfoEndpointCall();
+	private static final EndpoinCall userInfoEndpointCall = new EndpoinCall();
 
 	@Override
 	public void init() {

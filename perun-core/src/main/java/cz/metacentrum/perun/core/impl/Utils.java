@@ -2458,31 +2458,6 @@ public class Utils {
 	}
 
 	/**
-	 * Parse and verify ID token as described in
-	 * https://www.baeldung.com/java-jwt-token-decode
-	 * @param token id token
-	 * @return user data from parsed id token
-	 * @throws JsonProcessingException if token is invalid
-	 */
-	public static JsonNode parseIdToken(String token, String secretKey) throws JsonProcessingException {
-		ObjectMapper mapper = new ObjectMapper();
-		String[] tokenParts = token.split("\\.");
-
-		String header = cipherInput(tokenParts[0], true);
-		String payload = cipherInput(tokenParts[1], true);
-
-		JsonNode headerData = mapper.readTree(header);
-		String algorithm = headerData.get("alg").textValue();
-		SignatureAlgorithm sa = SignatureAlgorithm.valueOf(algorithm);
-		SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), algorithm);
-
-		DefaultJwtSignatureValidator validator = new DefaultJwtSignatureValidator(sa, secretKeySpec);
-		if (!validator.isValid(tokenParts[0] + "." + tokenParts[1], tokenParts[2])) {
-			throw new Exception("Could not verify JWT token integrity!");
-		}
-	}
-
-	/**
 	 * Sends alert to the mail of the removed identity.
 	 *
 	 * @param sess session

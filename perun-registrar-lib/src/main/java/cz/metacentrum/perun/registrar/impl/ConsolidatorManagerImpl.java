@@ -15,7 +15,7 @@ import cz.metacentrum.perun.core.bl.UsersManagerBl;
 import cz.metacentrum.perun.core.blImpl.AuthzResolverBlImpl;
 import cz.metacentrum.perun.core.blImpl.PerunBlImpl;
 import cz.metacentrum.perun.core.entry.ExtSourcesManagerEntry;
-import cz.metacentrum.perun.oidc.UserInfoEndpointCall;
+import cz.metacentrum.perun.oidc.EndpointCall;
 import cz.metacentrum.perun.oidc.EndpointResponse;
 import cz.metacentrum.perun.registrar.model.Application;
 import cz.metacentrum.perun.registrar.model.ApplicationFormItem;
@@ -58,7 +58,7 @@ public class ConsolidatorManagerImpl implements ConsolidatorManager {
 	private PerunSession registrarSession;
 	// expiring thread safe map cache
 	private ExpiringMap<String, Map<String, Object>> requestCache;
-	private static UserInfoEndpointCall userInfoEndpointCall = new UserInfoEndpointCall();
+	private static EndpointCall userInfoEndpointCall = new EndpointCall();
 
 	public void setRegistrarManager(RegistrarManager registrarManager) {
 		this.registrarManager = registrarManager;

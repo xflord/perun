@@ -65,7 +65,7 @@ public class JsonNodeParser {
 	 * @param endpointResponse
 	 * @return extsource login
 	 */
-	private String getExtSourceLogin(JsonNode endpointResponse) {
+	public static String getExtSourceLogin(JsonNode endpointResponse) {
 		List<String> ExtSourceLoginOptions = BeansUtils.getCoreConfig().getUserInfoEndpointExtSourceLogin();
 		String login = "";
 		for (String property: ExtSourceLoginOptions) {
@@ -89,7 +89,7 @@ public class JsonNodeParser {
 	 * @param endpointResponse
 	 * @return extsource name
 	 */
-	private String getExtSourceName(JsonNode endpointResponse) {
+	public static String getExtSourceName(JsonNode endpointResponse) {
 		String pathToExtSourceName = BeansUtils.getCoreConfig().getUserInfoEndpointExtSourceName();
 		return endpointResponse.path(pathToExtSourceName).asText();
 	}
