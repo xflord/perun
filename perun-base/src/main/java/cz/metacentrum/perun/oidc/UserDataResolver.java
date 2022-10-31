@@ -30,36 +30,6 @@ public class UserDataResolver {
 	private final EndpointCall endpointCall = new EndpointCall();
 
 	/**
-	 * Filling additional information with user's name, user's email and user-friendly format of extsource name
-	 * @param endpointResponse
-	 * @param additionalInformation
-	 */
-	private void fillAdditionalInformationWithUserData(JsonNode endpointResponse, Map<String, String> additionalInformation) {
-		String name = JsonNodeParser.getName(endpointResponse);
-		if(StringUtils.isNotEmpty(name)) {
-			additionalInformation.put(DISPLAY_NAME, name);
-		}
-
-		String email = JsonNodeParser.getSimpleField(endpointResponse, EMAIL);
-		if(StringUtils.isNotEmpty(email)) {
-			additionalInformation.put(MAIL, email);
-		}
-
-		// retrieve friendly IdP name from the nested property
-		String idpName = JsonNodeParser.getIdpName(endpointResponse);
-		if (StringUtils.isNotEmpty(idpName)) {
-			additionalInformation.put(SOURCE_IDP_NAME, idpName);
-		}
-
-		// update MFA timestamp
-		String mfaTimestamp = JsonNodeParser.getMfaTimestamp(endpointResponse);
-		if (mfaTimestamp != null && !mfaTimestamp.isEmpty()) {
-			Instant mfaReadableTimestamp = Instant.ofEpochSecond(Long.parseLong(mfaTimestamp));
-			additionalInformation.put(MFA_TIMESTAMP, mfaReadableTimestamp.toString());
-		}
-	}
-
-	/**
 	 * Parse and verify ID token as described in https://www.baeldung.com/java-jwt-token-decode.
 	 * If parsing fails, returns null. Otherwise, returns JsonNode of user data to be parsed.
 	 * @param token id token
@@ -107,44 +77,21 @@ public class UserDataResolver {
 		return payloadData;
 	}
 
-	private EndpointResponse processResponseData(JsonNode endpointResponse, Map<String, String> additionalInformation) {
-		fillAdditionalInformationWithUserData(endpointResponse, additionalInformation);
-
-		String extSourceName = JsonNodeParser.getExtSourceName(endpointResponse);
-		if (StringUtils.isEmpty(extSourceName)) {
-			log.info("Issuer from endpoint was empty or null: {}", extSourceName);
-		}
-		String extSourceLogin = JsonNodeParser.getExtSourceLogin(endpointResponse);
-		if (StringUtils.isEmpty(extSourceLogin)) {
-			log.info("User sub from endpoint was empty or null: {}", extSourceLogin);
-		}
-		return new EndpointResponse(extSourceName, extSourceLogin);
-	}
-
 	public EndpointResponse fetchUserData(String accessToken, String idToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
-		boolean useIdToken = BeansUtils.getCoreConfig().getRequestIdTokenData();
+		boolean useIdToken = BeansUtils.getCoreConfig().getFetchIdTokenData();
 		boolean useUserInfo = BeansUtils.getCoreConfig().getRequestUserInfoEndpoint();
 		boolean useIntrospection = BeansUtils.getCoreConfig().getRequestIntrospectionEndpoint();
 
 		EndpointResponse response = new EndpointResponse(null, null);
-		if (!useIdToken && !useUserInfo & !useIntrospection) {
+		if (!useIdToken && !useUserInfo && !useIntrospection) {
+			log.info("Fetching data from ID token, userInfo or introspection endpoint is not allowed.");
 			return response;
 		}
 
 		JsonNode configurationResponse = endpointCall.callConfigurationEndpoint(issuer);
 
 		if (idToken != null && !idToken.isBlank() && useIdToken) {
-			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCall.JWK_ENDPOINT);
-			if (url != null && !url.isBlank()) {
-				JsonNode responseData = endpointCall.callEndpoint(url);
-				String secretKey = JsonNodeParser.getSimpleField(responseData, "n");
-				if (secretKey != null && !secretKey.isBlank()) {
-					JsonNode tokenData = parseIdToken(idToken, secretKey);
-					processResponseData(tokenData, additionalInformation);
-				} else {
-					log.info("Secret key was not present in JWK endpoint " + url);
-				}
-			}
+			fetchIdTokenData(idToken, additionalInformation, configurationResponse);
 		}
 
 		if (useUserInfo) {
@@ -165,6 +112,64 @@ public class UserDataResolver {
 		}
 
 		return response;
+	}
+
+	private void fetchIdTokenData(String idToken, Map<String, String> additionalInformation, JsonNode configurationResponse) {
+		String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCall.JWK_ENDPOINT);
+		if (url != null && !url.isBlank()) {
+			JsonNode responseData = endpointCall.callEndpoint(url);
+			String secretKey = JsonNodeParser.getSimpleField(responseData, "n");
+			if (secretKey != null && !secretKey.isBlank()) {
+				JsonNode tokenData = parseIdToken(idToken, secretKey);
+				processResponseData(tokenData, additionalInformation);
+			} else {
+				log.info("Secret key was not present in JWK endpoint " + url);
+			}
+		}
+	}
+
+	/**
+	 * Filling additional information with user's name, user's email and user-friendly format of extsource name
+	 * @param endpointResponse
+	 * @param additionalInformation
+	 */
+	private void fillAdditionalInformationWithUserData(JsonNode endpointResponse, Map<String, String> additionalInformation) {
+		String name = JsonNodeParser.getName(endpointResponse);
+		if(StringUtils.isNotEmpty(name)) {
+			additionalInformation.put(DISPLAY_NAME, name);
+		}
+
+		String email = JsonNodeParser.getSimpleField(endpointResponse, EMAIL);
+		if(StringUtils.isNotEmpty(email)) {
+			additionalInformation.put(MAIL, email);
+		}
+
+		// retrieve friendly IdP name from the nested property
+		String idpName = JsonNodeParser.getIdpName(endpointResponse);
+		if (StringUtils.isNotEmpty(idpName)) {
+			additionalInformation.put(SOURCE_IDP_NAME, idpName);
+		}
+
+		// update MFA timestamp
+		String mfaTimestamp = JsonNodeParser.getMfaTimestamp(endpointResponse);
+		if (mfaTimestamp != null && !mfaTimestamp.isEmpty()) {
+			Instant mfaReadableTimestamp = Instant.ofEpochSecond(Long.parseLong(mfaTimestamp));
+			additionalInformation.put(MFA_TIMESTAMP, mfaReadableTimestamp.toString());
+		}
+	}
+
+	private EndpointResponse processResponseData(JsonNode endpointResponse, Map<String, String> additionalInformation) {
+		fillAdditionalInformationWithUserData(endpointResponse, additionalInformation);
+
+		String extSourceName = JsonNodeParser.getExtSourceName(endpointResponse);
+		if (StringUtils.isEmpty(extSourceName)) {
+			log.info("Issuer from endpoint was empty or null: {}", extSourceName);
+		}
+		String extSourceLogin = JsonNodeParser.getExtSourceLogin(endpointResponse);
+		if (StringUtils.isEmpty(extSourceLogin)) {
+			log.info("User sub from endpoint was empty or null: {}", extSourceLogin);
+		}
+		return new EndpointResponse(extSourceName, extSourceLogin);
 	}
 
 }

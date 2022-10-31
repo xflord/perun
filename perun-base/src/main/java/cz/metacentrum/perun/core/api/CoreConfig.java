@@ -53,6 +53,8 @@ public class CoreConfig {
 	private boolean lookupUserByIdentifiersAndExtSourceLogin;
 	private boolean forceConsents;
 	private boolean requestUserInfoEndpoint;
+	private boolean requestIntrospectionEndpoint;
+	private boolean fetchIdTokenData;
 	private String alternativePasswordManagerProgram;
 	private String instanceId;
 	private String instanceName;
@@ -745,6 +747,22 @@ public class CoreConfig {
 
 	public boolean getRequestUserInfoEndpoint() {
 		return this.requestUserInfoEndpoint;
+	}
+
+	public void setRequestIntrospectionEndpoint(boolean requestIntrospectionEndpoint) {
+		this.requestIntrospectionEndpoint = requestIntrospectionEndpoint;
+	}
+
+	public boolean getRequestIntrospectionEndpoint() {
+		return this.requestIntrospectionEndpoint;
+	}
+
+	public void setFetchIdTokenData(boolean fetchIdTokenData) {
+		this.requestIntrospectionEndpoint = fetchIdTokenData;
+	}
+
+	public boolean getFetchIdTokenData() {
+		return this.fetchIdTokenData;
 	}
 
 	public List<String> getUserInfoEndpointExtSourceLogin() {
