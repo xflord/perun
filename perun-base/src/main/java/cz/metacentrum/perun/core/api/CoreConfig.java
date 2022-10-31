@@ -55,6 +55,8 @@ public class CoreConfig {
 	private boolean requestUserInfoEndpoint;
 	private boolean requestIntrospectionEndpoint;
 	private boolean fetchIdTokenData;
+	private String oidcClientId;
+	private String oidcClientSecret;
 	private String alternativePasswordManagerProgram;
 	private String instanceId;
 	private String instanceName;
@@ -758,11 +760,27 @@ public class CoreConfig {
 	}
 
 	public void setFetchIdTokenData(boolean fetchIdTokenData) {
-		this.requestIntrospectionEndpoint = fetchIdTokenData;
+		this.fetchIdTokenData = fetchIdTokenData;
 	}
 
 	public boolean getFetchIdTokenData() {
 		return this.fetchIdTokenData;
+	}
+
+	public void setOidcClientId(String clientId) {
+		this.oidcClientId = clientId;
+	}
+
+	public String getOidcClientId() {
+		return this.oidcClientId;
+	}
+
+	public void setOidcClientSecret(String clientSecret) {
+		this.oidcClientSecret = clientSecret;
+	}
+
+	public String getOidcClientSecret() {
+		return this.oidcClientSecret;
 	}
 
 	public List<String> getUserInfoEndpointExtSourceLogin() {

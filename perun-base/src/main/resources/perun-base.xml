@@ -56,6 +56,8 @@
 		<property name="attributesForUpdateIdP" value="#{'${perun.attributesForUpdate.idp}'.split('\s*,\s*')}"/>
 		<property name="attributesForUpdateX509" value="#{'${perun.attributesForUpdate.x509}'.split('\s*,\s*')}"/>
 		<property name="oidcIssuers" value="#{'${perun.oidc.issuers}'.split('\s*,\s*')}"/>
+		<property name="oidcClientId" value="${perun.oidcClientId}"/>
+		<property name="oidcClientSecret" value="${perun.oidcClientSecret}"/>
 		<property name="allowedCorsDomains" value="#{'${perun.allowedCorsDomains}'.split('\s*,\s*')}" />
 		<property name="pdfFontPath" value="${perun.pdfFontPath}" />
 		<property name="smtpHost" value="${mail.smtp.host}" />
@@ -183,6 +185,8 @@
 				<prop key="perun.userInfoEndpoint.acrPropertyName">acr</prop>
 				<prop key="perun.userInfoEndpoint.mfaAcrValue">https://refeds.org/profile/mfa</prop>
 				<prop key="perun.enforceMfa">false</prop>
+				<prop key="perun.oidcClientId"/>
+				<prop key="perun.oidcClientSecret"/>
 			</props>
 		</property>
 	</bean>
