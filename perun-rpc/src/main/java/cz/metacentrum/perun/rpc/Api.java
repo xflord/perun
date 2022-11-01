@@ -22,6 +22,7 @@ import cz.metacentrum.perun.core.impl.AttributesManagerImpl;
 import cz.metacentrum.perun.core.impl.PerunAppsConfig;
 import cz.metacentrum.perun.core.api.exceptions.ExpiredTokenException;
 import cz.metacentrum.perun.oidc.EndpointResponse;
+import cz.metacentrum.perun.oidc.UserDataResolver;
 import cz.metacentrum.perun.rpc.deserializer.Deserializer;
 import cz.metacentrum.perun.rpc.deserializer.JsonDeserializer;
 import cz.metacentrum.perun.rpc.deserializer.UrlDeserializer;
@@ -110,7 +111,7 @@ public class Api extends HttpServlet {
 	private static final String DELEGATED_EXTSOURCE_NAME = "delegatedExtSourceName";
 	private static final String DELEGATED_EXTSOURCE_TYPE = "delegatedExtSourceType";
 	private static final String LOA = "loa";
-	private static final EndpoinCall userInfoEndpointCall = new EndpoinCall();
+	private static final UserDataResolver userDataResolver = new UserDataResolver();
 
 	@Override
 	public void init() {
@@ -265,12 +266,10 @@ public class Api extends HttpServlet {
 			}
 			extSourceLoaString = "-1";
 
-			// TADY GENERAL METODA, ktera bude umet vyhodnotit ID token, a oba endpointy
-
 			if (BeansUtils.getCoreConfig().getRequestUserInfoEndpoint()) {
 				EndpointResponse endpointResponse;
 				try {
-					endpointResponse = userInfoEndpointCall.getEndpointData(req.getHeader(OIDC_ACCESS_TOKEN), iss, additionalInformations);
+					endpointResponse = userDataResolver.fetchUserData(req.getHeader(OIDC_ACCESS_TOKEN), null, iss, additionalInformations);
 				} catch (InternalErrorException | ExpiredTokenException ex) {
 					endpointResponse = new EndpointResponse(null, null);
 				}
