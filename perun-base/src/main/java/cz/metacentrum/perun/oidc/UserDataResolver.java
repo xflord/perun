@@ -1,7 +1,6 @@
 package cz.metacentrum.perun.oidc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.metacentrum.perun.core.api.BeansUtils;
@@ -10,12 +9,10 @@ import io.jsonwebtoken.impl.crypto.DefaultJwtSignatureValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.shaded.org.bouncycastle.jcajce.BCFKSLoadStoreParameter;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 
 import static cz.metacentrum.perun.core.api.PerunPrincipal.MFA_TIMESTAMP;
@@ -27,7 +24,7 @@ public class UserDataResolver {
 	private final String DISPLAY_NAME = "displayName";
 	private final String EMAIL = "email";
 	private static final Logger log = LoggerFactory.getLogger(UserDataResolver.class);
-	private final EndpointCall endpointCall = new EndpointCall();
+	private final EndpointCaller endpointCaller = new EndpointCaller();
 
 	/**
 	 * Parse and verify ID token as described in https://www.baeldung.com/java-jwt-token-decode.
@@ -88,24 +85,41 @@ public class UserDataResolver {
 			return response;
 		}
 
-		JsonNode configurationResponse = endpointCall.callConfigurationEndpoint(issuer);
+		JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
 
 		if (idToken != null && !idToken.isBlank() && useIdToken) {
 			fetchIdTokenData(idToken, additionalInformation, configurationResponse);
 		}
 
 		if (useUserInfo) {
-			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCall.USERINFO_ENDPOINT);
+			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.USERINFO_ENDPOINT);
 			if (url != null && !url.isBlank()) {
-				JsonNode responseData = endpointCall.callUserInfoEndpoint(accessToken, url);
+				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
 				response = processResponseData(responseData, additionalInformation);
 			}
 		}
 
 		if (useIntrospection) {
-			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCall.INTROSPECTION_ENDPOINT);
+			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.INTROSPECTION_ENDPOINT);
 			if (url != null && !url.isBlank()) {
-				JsonNode responseData = endpointCall.callUserInfoEndpoint(accessToken, url);
+				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
+				EndpointResponse introspectionResponse = processResponseData(responseData, additionalInformation);
+				response = response.getIssuer() == null ? introspectionResponse : response;
+			}
+		}
+
+		return response;
+	}
+
+	public EndpointResponse fetchIntrospectionUserData(String accessToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
+		boolean useIntrospection = BeansUtils.getCoreConfig().getRequestIntrospectionEndpoint();
+		JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
+		EndpointResponse response = new EndpointResponse(null, null);
+
+		if (useIntrospection) {
+			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.INTROSPECTION_ENDPOINT);
+			if (url != null && !url.isBlank()) {
+				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
 				EndpointResponse introspectionResponse = processResponseData(responseData, additionalInformation);
 				response = response.getIssuer() == null ? introspectionResponse : response;
 			}
@@ -115,9 +129,9 @@ public class UserDataResolver {
 	}
 
 	private void fetchIdTokenData(String idToken, Map<String, String> additionalInformation, JsonNode configurationResponse) {
-		String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCall.JWK_ENDPOINT);
+		String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.JWK_ENDPOINT);
 		if (url != null && !url.isBlank()) {
-			JsonNode responseData = endpointCall.callEndpoint(url);
+			JsonNode responseData = endpointCaller.callEndpoint(url);
 			String secretKey = JsonNodeParser.getSimpleField(responseData, "n");
 			if (secretKey != null && !secretKey.isBlank()) {
 				JsonNode tokenData = parseIdToken(idToken, secretKey);

@@ -77,6 +77,7 @@ import cz.metacentrum.perun.core.impl.AuthzResolverImpl;
 import cz.metacentrum.perun.core.impl.AuthzRoles;
 import cz.metacentrum.perun.core.impl.Utils;
 import cz.metacentrum.perun.core.implApi.AuthzResolverImplApi;
+import cz.metacentrum.perun.oidc.UserDataResolver;
 import cz.metacentrum.perun.registrar.model.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,6 +120,7 @@ public class AuthzResolverBlImpl implements AuthzResolverBl {
 	private final static String userObjectType = "User";
 	private final static List<String> authorizedDefaultReadRoles = List.of(Role.PERUNADMIN, Role.PERUNOBSERVER, Role.RPC, Role.ENGINE);
 	private final static List<String> authorizedDefaultWriteRoles = List.of(Role.PERUNADMIN);
+	private final static UserDataResolver userDataResolver = new UserDataResolver();
 
 	/**
 	 * Prepare necessary structures and resolve access rights for the session's principal.
@@ -2612,9 +2614,9 @@ public class AuthzResolverBlImpl implements AuthzResolverBl {
 			throw new MFAuthenticationException("Cannot verify MFA - issuer is missing.");
 		}
 
-		EndpoinCall userInfoEndpointCall = new EndpoinCall();
-		getUserOidcInfo
-		String timestamp = userInfoEndpointCall.getUserInfoEndpointData(accessToken, issuer);
+		HashMap<String, String> additionalInformation = new HashMap<>();
+		userDataResolver.fetchIntrospectionUserData(accessToken, issuer, additionalInformation);
+		String timestamp = additionalInformation.get(MFA_TIMESTAMP);
 		if (timestamp != null && !timestamp.isEmpty()) {
 			sess.getPerunPrincipal().getAdditionalInformations().put(MFA_TIMESTAMP, timestamp);
 			if (isMfaTimestampValid(sess)) {

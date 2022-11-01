@@ -5,7 +5,6 @@ import cz.metacentrum.perun.core.api.BeansUtils;
 import cz.metacentrum.perun.core.api.exceptions.ExpiredTokenException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -18,8 +17,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 
-public class EndpointCall {
-	private static final Logger log = LoggerFactory.getLogger(EndpointCall.class);
+public class EndpointCaller {
+	private static final Logger log = LoggerFactory.getLogger(EndpointCaller.class);
 
 	public static String INTROSPECTION_ENDPOINT = "introspection_endpoint";
 	public static String USERINFO_ENDPOINT = "userinfo_endpoint";
