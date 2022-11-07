@@ -75,28 +75,24 @@ public class UserDataResolver {
 	}
 
 	public EndpointResponse fetchUserData(String accessToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
-//		boolean useIdToken = BeansUtils.getCoreConfig().getFetchIdTokenData();
-		Boolean useIdToken = false;
 		boolean useUserInfo = BeansUtils.getCoreConfig().getRequestUserInfoEndpoint();
 		boolean useIntrospection = BeansUtils.getCoreConfig().getRequestIntrospectionEndpoint();
 
 		EndpointResponse response = new EndpointResponse(null, null);
-		if (!useIdToken && !useUserInfo && !useIntrospection) {
-			log.info("Fetching data from ID token, userInfo or introspection endpoint is not allowed.");
+		if (!useUserInfo && !useIntrospection) {
+			log.info("Fetching data from userInfo or introspection endpoint is not allowed.");
 			return response;
 		}
 
 		JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
-
-//		if (idToken != null && !idToken.isBlank() && useIdToken) {
-//			fetchIdTokenData(idToken, additionalInformation, configurationResponse);
-//		}
 
 		if (useUserInfo) {
 			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.USERINFO_ENDPOINT);
 			if (url != null && !url.isBlank()) {
 				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
 				response = processResponseData(responseData, additionalInformation);
+			} else {
+				log.error("UserInfo endpoint URL not retrieved from well-known configuration from issuer " + issuer);
 			}
 		}
 
@@ -106,6 +102,8 @@ public class UserDataResolver {
 				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
 				EndpointResponse introspectionResponse = processResponseData(responseData, additionalInformation);
 				response = response.getIssuer() == null ? introspectionResponse : response;
+			} else {
+				log.error("Introspection endpoint URL not retrieved from well-known configuration from issuer " + issuer);
 			}
 		}
 
@@ -114,34 +112,22 @@ public class UserDataResolver {
 
 	public EndpointResponse fetchIntrospectionData(String accessToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
 		boolean useIntrospection = BeansUtils.getCoreConfig().getRequestIntrospectionEndpoint();
-		JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
 		EndpointResponse response = new EndpointResponse(null, null);
 
 		if (useIntrospection) {
+			JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
 			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.INTROSPECTION_ENDPOINT);
 			if (url != null && !url.isBlank()) {
 				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
 				EndpointResponse introspectionResponse = processResponseData(responseData, additionalInformation);
 				response = response.getIssuer() == null ? introspectionResponse : response;
+			} else {
+				log.error("Introspection endpoint URL not retrieved from well-known configuration from issuer " + issuer);
 			}
 		}
 
 		return response;
 	}
-
-//	private void fetchIdTokenData(String idToken, Map<String, String> additionalInformation, JsonNode configurationResponse) {
-//		String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.JWK_ENDPOINT);
-//		if (url != null && !url.isBlank()) {
-//			JsonNode responseData = endpointCaller.callEndpoint(url);
-//			String secretKey = JsonNodeParser.getSimpleField(responseData, "n");
-//			if (secretKey != null && !secretKey.isBlank()) {
-//				JsonNode tokenData = parseIdToken(idToken, secretKey);
-//				processResponseData(tokenData, additionalInformation);
-//			} else {
-//				log.info("Secret key was not present in JWK endpoint " + url);
-//			}
-//		}
-//	}
 
 	/**
 	 * Filling additional information with user's name, user's email and user-friendly format of extsource name

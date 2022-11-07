@@ -26,6 +26,12 @@ public class JsonNodeParser {
 		return null;
 	}
 
+	/**
+	 * Returns value of a simple non-compound property
+	 * @param endpointResponse
+	 * @param fieldName
+	 * @return
+	 */
 	public static String getSimpleField(JsonNode endpointResponse, String fieldName) {
 		return endpointResponse.path(fieldName).asText();
 	}
