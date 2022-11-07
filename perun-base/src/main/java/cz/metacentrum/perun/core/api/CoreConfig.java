@@ -54,7 +54,6 @@ public class CoreConfig {
 	private boolean forceConsents;
 	private boolean requestUserInfoEndpoint;
 	private boolean requestIntrospectionEndpoint;
-	private boolean fetchIdTokenData;
 	private String oidcClientId;
 	private String oidcClientSecret;
 	private String alternativePasswordManagerProgram;
@@ -757,14 +756,6 @@ public class CoreConfig {
 
 	public boolean getRequestIntrospectionEndpoint() {
 		return this.requestIntrospectionEndpoint;
-	}
-
-	public void setFetchIdTokenData(boolean fetchIdTokenData) {
-		this.fetchIdTokenData = fetchIdTokenData;
-	}
-
-	public boolean getFetchIdTokenData() {
-		return this.fetchIdTokenData;
 	}
 
 	public void setOidcClientId(String clientId) {

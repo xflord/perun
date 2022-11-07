@@ -269,7 +269,7 @@ public class Api extends HttpServlet {
 			if (BeansUtils.getCoreConfig().getRequestUserInfoEndpoint()) {
 				EndpointResponse endpointResponse;
 				try {
-					endpointResponse = userDataResolver.fetchUserData(req.getHeader(OIDC_ACCESS_TOKEN), null, iss, additionalInformations);
+					endpointResponse = userDataResolver.fetchUserData(req.getHeader(OIDC_ACCESS_TOKEN), iss, additionalInformations);
 				} catch (InternalErrorException | ExpiredTokenException ex) {
 					endpointResponse = new EndpointResponse(null, null);
 				}

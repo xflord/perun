@@ -74,8 +74,9 @@ public class UserDataResolver {
 		return payloadData;
 	}
 
-	public EndpointResponse fetchUserData(String accessToken, String idToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
-		boolean useIdToken = BeansUtils.getCoreConfig().getFetchIdTokenData();
+	public EndpointResponse fetchUserData(String accessToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
+//		boolean useIdToken = BeansUtils.getCoreConfig().getFetchIdTokenData();
+		Boolean useIdToken = false;
 		boolean useUserInfo = BeansUtils.getCoreConfig().getRequestUserInfoEndpoint();
 		boolean useIntrospection = BeansUtils.getCoreConfig().getRequestIntrospectionEndpoint();
 
@@ -87,9 +88,9 @@ public class UserDataResolver {
 
 		JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
 
-		if (idToken != null && !idToken.isBlank() && useIdToken) {
-			fetchIdTokenData(idToken, additionalInformation, configurationResponse);
-		}
+//		if (idToken != null && !idToken.isBlank() && useIdToken) {
+//			fetchIdTokenData(idToken, additionalInformation, configurationResponse);
+//		}
 
 		if (useUserInfo) {
 			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.USERINFO_ENDPOINT);
@@ -111,7 +112,7 @@ public class UserDataResolver {
 		return response;
 	}
 
-	public EndpointResponse fetchIntrospectionUserData(String accessToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
+	public EndpointResponse fetchIntrospectionData(String accessToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
 		boolean useIntrospection = BeansUtils.getCoreConfig().getRequestIntrospectionEndpoint();
 		JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
 		EndpointResponse response = new EndpointResponse(null, null);
@@ -128,19 +129,19 @@ public class UserDataResolver {
 		return response;
 	}
 
-	private void fetchIdTokenData(String idToken, Map<String, String> additionalInformation, JsonNode configurationResponse) {
-		String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.JWK_ENDPOINT);
-		if (url != null && !url.isBlank()) {
-			JsonNode responseData = endpointCaller.callEndpoint(url);
-			String secretKey = JsonNodeParser.getSimpleField(responseData, "n");
-			if (secretKey != null && !secretKey.isBlank()) {
-				JsonNode tokenData = parseIdToken(idToken, secretKey);
-				processResponseData(tokenData, additionalInformation);
-			} else {
-				log.info("Secret key was not present in JWK endpoint " + url);
-			}
-		}
-	}
+//	private void fetchIdTokenData(String idToken, Map<String, String> additionalInformation, JsonNode configurationResponse) {
+//		String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.JWK_ENDPOINT);
+//		if (url != null && !url.isBlank()) {
+//			JsonNode responseData = endpointCaller.callEndpoint(url);
+//			String secretKey = JsonNodeParser.getSimpleField(responseData, "n");
+//			if (secretKey != null && !secretKey.isBlank()) {
+//				JsonNode tokenData = parseIdToken(idToken, secretKey);
+//				processResponseData(tokenData, additionalInformation);
+//			} else {
+//				log.info("Secret key was not present in JWK endpoint " + url);
+//			}
+//		}
+//	}
 
 	/**
 	 * Filling additional information with user's name, user's email and user-friendly format of extsource name

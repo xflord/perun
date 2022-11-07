@@ -18,7 +18,6 @@
 		<property name="forceConsents" value="${perun.force.consents}"/>
 		<property name="requestUserInfoEndpoint" value="${perun.requestUserInfoEndpoint}"/>
 		<property name="requestIntrospectionEndpoint" value="${perun.requestIntrospectionEndpoint}"/>
-		<property name="fetchIdTokenData" value="${perun.fetchIdTokenData}"/>
 		<property name="enginePrincipals" value="#{'${perun.engine.principals}'.split('\s*,\s*')}"/>
 		<property name="generatedLoginNamespaces" value="#{'${perun.loginNamespace.generated}'.split('\s*,\s*')}"/>
 		<property name="groupSynchronizationInterval" value="${perun.group.synchronization.interval}"/>
@@ -111,7 +110,6 @@
 				<prop key="perun.force.consents">false</prop>
 				<prop key="perun.requestUserInfoEndpoint">false</prop>
 				<prop key="perun.requestIntrospectionEndpoint">false</prop>
-				<prop key="perun.fetchIdTokenData">false</prop>
 				<prop key="perun.group.synchronization.interval">1</prop>
 				<prop key="perun.group.synchronization.timeout">10</prop>
 				<prop key="perun.group.structure.synchronization.interval">1</prop>

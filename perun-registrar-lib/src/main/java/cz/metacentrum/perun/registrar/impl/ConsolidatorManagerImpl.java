@@ -425,7 +425,7 @@ public class ConsolidatorManagerImpl implements ConsolidatorManager {
     @Override
     public void consolidate(PerunSession sess, String accessToken) throws PerunException {
 		Map<String, String> additionalInformationNonCaller = new HashMap<>();
-		EndpointResponse userInfoNonCaller = userDataResolver.fetchUserData(accessToken, null, sess.getPerunPrincipal().getAdditionalInformations().get(ISSUER), additionalInformationNonCaller);
+		EndpointResponse userInfoNonCaller = userDataResolver.fetchUserData(accessToken, sess.getPerunPrincipal().getAdditionalInformations().get(ISSUER), additionalInformationNonCaller);
 		if (StringUtils.isEmpty(userInfoNonCaller.getSub()) || StringUtils.isEmpty(userInfoNonCaller.getIssuer()) ||
 			StringUtils.isEmpty(sess.getPerunPrincipal().getActor()) || StringUtils.isEmpty(sess.getPerunPrincipal().getExtSourceName())) {
 			log.error("Call to user info endpoint didn't found original issuer or original sub.");
