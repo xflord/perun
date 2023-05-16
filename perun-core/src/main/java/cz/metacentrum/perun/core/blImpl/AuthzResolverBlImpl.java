@@ -2641,7 +2641,7 @@ public class AuthzResolverBlImpl implements AuthzResolverBl {
 		}
 
 		HashMap<String, String> additionalInformation = new HashMap<>();
-		userDataResolver.fetchIntrospectionData(accessToken, issuer, additionalInformation);
+		userDataResolver.fetchUserData(accessToken, issuer, additionalInformation);
 		String timestamp = additionalInformation.get(MFA_TIMESTAMP);
 		if (timestamp != null && !timestamp.isEmpty()) {
 			sess.getPerunPrincipal().getAdditionalInformations().put(MFA_TIMESTAMP, timestamp);

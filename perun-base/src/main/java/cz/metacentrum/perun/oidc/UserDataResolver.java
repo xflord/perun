@@ -86,24 +86,26 @@ public class UserDataResolver {
 
 		JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
 
+		if (useIntrospection) {
+			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.INTROSPECTION_ENDPOINT);
+			if (url != null && !url.isBlank()) {
+				JsonNode responseData = endpointCaller.callIntrospectionEndpoint(accessToken, url);
+				response = processResponseData(responseData, additionalInformation);
+				log.info("Retrieved info from introspection endpoint " + response);
+			} else {
+				log.error("Introspection endpoint URL not retrieved from well-known configuration from issuer " + issuer);
+			}
+		}
+
 		if (useUserInfo) {
 			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.USERINFO_ENDPOINT);
 			if (url != null && !url.isBlank()) {
 				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
-				response = processResponseData(responseData, additionalInformation);
+				EndpointResponse userInfoResponse = processResponseData(responseData, additionalInformation);
+				response = response.getIssuer() == null ? userInfoResponse : response;
+				log.info("Retrieved info from user info endpoint " + response);
 			} else {
 				log.error("UserInfo endpoint URL not retrieved from well-known configuration from issuer " + issuer);
-			}
-		}
-
-		if (useIntrospection) {
-			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.INTROSPECTION_ENDPOINT);
-			if (url != null && !url.isBlank()) {
-				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
-				EndpointResponse introspectionResponse = processResponseData(responseData, additionalInformation);
-				response = response.getIssuer() == null ? introspectionResponse : response;
-			} else {
-				log.error("Introspection endpoint URL not retrieved from well-known configuration from issuer " + issuer);
 			}
 		}
 
@@ -118,9 +120,8 @@ public class UserDataResolver {
 			JsonNode configurationResponse = endpointCaller.callConfigurationEndpoint(issuer);
 			String url = JsonNodeParser.getSimpleField(configurationResponse, EndpointCaller.INTROSPECTION_ENDPOINT);
 			if (url != null && !url.isBlank()) {
-				JsonNode responseData = endpointCaller.callUserInfoEndpoint(accessToken, url);
-				EndpointResponse introspectionResponse = processResponseData(responseData, additionalInformation);
-				response = response.getIssuer() == null ? introspectionResponse : response;
+				JsonNode responseData = endpointCaller.callIntrospectionEndpoint(accessToken, url);
+				response = processResponseData(responseData, additionalInformation);
 			} else {
 				log.error("Introspection endpoint URL not retrieved from well-known configuration from issuer " + issuer);
 			}

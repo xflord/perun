@@ -266,11 +266,14 @@ public class Api extends HttpServlet {
 			}
 			extSourceLoaString = "-1";
 
-			if (BeansUtils.getCoreConfig().getRequestUserInfoEndpoint()) {
+			if (BeansUtils.getCoreConfig().getRequestUserInfoEndpoint() || BeansUtils.getCoreConfig().getRequestIntrospectionEndpoint()) {
 				EndpointResponse endpointResponse;
+				log.debug("Getting MFA endpoint response");
 				try {
 					endpointResponse = userDataResolver.fetchUserData(req.getHeader(OIDC_ACCESS_TOKEN), iss, additionalInformations);
+					log.debug("MFA CONFIG: " + additionalInformations);
 				} catch (InternalErrorException | ExpiredTokenException ex) {
+					log.debug("MFA endpoint failed: " + ex);
 					endpointResponse = new EndpointResponse(null, null);
 				}
 				if (isNotEmpty(endpointResponse.getSub()) && isNotEmpty(endpointResponse.getIssuer())) {

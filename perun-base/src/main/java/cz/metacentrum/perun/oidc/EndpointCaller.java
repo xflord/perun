@@ -62,7 +62,7 @@ public class EndpointCaller {
 				throw new ExpiredTokenException("Your token is no longer valid. Please retry from the start.");
 			} else {
 				log.error("Failed to get introspectionResponse for access token: {}. The response code was: {}", accessToken, ex.getStatusCode());
-				throw new InternalErrorException("Failed to get introspectionResponse for access token: " + accessToken + ". The response code was: " + ex.getStatusCode());
+				throw new InternalErrorException("Failed to get introspectionResponse for access token: " + accessToken + ". The response was: " + ex.getResponseBodyAsString());
 			}
 		}
 
@@ -84,7 +84,7 @@ public class EndpointCaller {
 				throw new ExpiredTokenException("Your token is no longer valid. Please retry from the start.");
 			} else {
 				log.error("Failed to get userInfoResponse for access token: {}. The response code was: {}", accessToken, ex.getStatusCode());
-				throw new InternalErrorException("Failed to get userInfoResponse for access token: " + accessToken + ". The response code was: " + ex.getStatusCode());
+				throw new InternalErrorException("Failed to get introspectionResponse for access token: " + accessToken + ". The response was: " + ex.getResponseBodyAsString());
 			}
 		}
 

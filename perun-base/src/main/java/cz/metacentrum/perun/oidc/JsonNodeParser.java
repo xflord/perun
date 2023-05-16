@@ -8,6 +8,8 @@ import java.util.List;
 
 public class JsonNodeParser {
 
+	private static final String introspectionTimestampPropertyName = "auth_time";
+
 	/**
 	 * Returns mfa timestamp [epoch seconds] if acr value is equal to MFA acr value
 	 * @param endpointResponse parsed response from userInfo endpoint
@@ -16,6 +18,11 @@ public class JsonNodeParser {
 		String acrProperty = BeansUtils.getCoreConfig().getUserInfoEndpointAcrPropertyName();
 		String acr = endpointResponse.path(acrProperty).asText();
 		if (StringUtils.isNotEmpty(acr) && acr.equals(BeansUtils.getCoreConfig().getUserInfoEndpointMfaAcrValue())) {
+			String introspectionTimestamp = endpointResponse.path(introspectionTimestampPropertyName).asText();
+			if (StringUtils.isNotEmpty(introspectionTimestamp)) {
+				return introspectionTimestamp;
+			}
+			// if introspection timestamp property not filled, user endpoint was used
 			String mfaTimestampProperty = BeansUtils.getCoreConfig().getUserInfoEndpointMfaAuthTimestampPropertyName();
 			String mfaTimestamp = endpointResponse.path(mfaTimestampProperty).asText();
 			if (StringUtils.isNotEmpty(mfaTimestamp)) {
