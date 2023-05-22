@@ -7172,6 +7172,7 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 		policies.add(Triple.of(Role.GROUPMEMBERSHIPMANAGER, READ, RoleObject.Vo));
 		policies.add(Triple.of(Role.FACILITYADMIN, READ, RoleObject.Facility));
 		policies.add(Triple.of(Role.SPREGAPPLICATION, READ, RoleObject.None));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn:perun:user:attribute-def:def:phone
@@ -7856,6 +7857,7 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 		policies.add(Triple.of(Role.GROUPADMIN, READ, RoleObject.Group));
 		policies.add(Triple.of(Role.FACILITYADMIN, READ, RoleObject.Facility));
 		policies.add(Triple.of(Role.FACILITYADMIN, WRITE, RoleObject.Facility));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn:perun:resource:attribute-def:def:userSettingsName
@@ -7928,6 +7930,7 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 		policies.add(Triple.of(Role.GROUPADMIN, READ, RoleObject.Group));
 		policies.add(Triple.of(Role.GROUPMEMBERSHIPMANAGER, READ, RoleObject.Group));
 		policies.add(Triple.of(Role.FACILITYADMIN, READ, RoleObject.Facility));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn:perun:user:attribute-def:virt:groupNames
@@ -7988,6 +7991,7 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 		policies.add(Triple.of(Role.VOADMIN, READ, RoleObject.Vo));
 		policies.add(Triple.of(Role.GROUPADMIN, READ, RoleObject.Group));
 		policies.add(Triple.of(Role.FACILITYADMIN, READ, RoleObject.Facility));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn_perun_user_facility_attribute_def_virt_isBanned
@@ -7995,6 +7999,7 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 		//set attribute rights (with dummy id of attribute - not known yet)
 		policies = new ArrayList<>();
 		policies.add(Triple.of(Role.FACILITYADMIN, READ, RoleObject.Facility));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn_perun_member_resource_attribute_def_virt_isBanned
@@ -8054,6 +8059,8 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 		policies = new ArrayList<>();
 		policies.add(Triple.of(Role.SELF, READ, RoleObject.User));
 		policies.add(Triple.of(Role.SELF, WRITE, RoleObject.User));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
+		policies.add(Triple.of(Role.PROXY, WRITE, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn_perun_ues_attribute_def_def_IdPOrganizationName
@@ -8067,6 +8074,8 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 		policies = new ArrayList<>();
 		policies.add(Triple.of(Role.SELF, READ, RoleObject.User));
 		policies.add(Triple.of(Role.SELF, WRITE, RoleObject.User));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
+		policies.add(Triple.of(Role.PROXY, WRITE, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn_perun_entityless_attribute_def_def_randomPwdResetTemplate
@@ -8117,6 +8126,8 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 
 		policies = new ArrayList<>();
 		policies.add(Triple.of(Role.SELF, READ, RoleObject.User));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
+		policies.add(Triple.of(Role.PROXY, WRITE, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn_perun_user_attribute_def_def_mfaCriticalObject
@@ -8201,6 +8212,7 @@ public class AttributesManagerBlImpl implements AttributesManagerBl {
 		policies = new ArrayList<>();
 		policies.add(Triple.of(Role.VOADMIN, READ, RoleObject.Vo));
 		policies.add(Triple.of(Role.FACILITYADMIN, READ, RoleObject.Facility));
+		policies.add(Triple.of(Role.PROXY, READ, RoleObject.None));
 		attributes.put(attr, createInitialPolicyCollections(policies));
 
 		//urn_perun_host_attribute_def_def_mfaCriticalObject
