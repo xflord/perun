@@ -1,6 +1,8 @@
 package cz.metacentrum.perun.oidc;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.metacentrum.perun.core.api.BeansUtils;
 import cz.metacentrum.perun.core.api.exceptions.ExpiredTokenException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
@@ -32,6 +34,8 @@ public class UserInfoEndpointCall {
 
 	public UserInfoEndpointResponse getUserInfoEndpointData(String accessToken, String issuer, Map<String, String> additionalInformation) throws ExpiredTokenException {
 		JsonNode userInfo = callUserInfo(accessToken, issuer);
+		ObjectMapper mapper = new ObjectMapper();
+		Map<String, String> values = mapper.convertValue(userInfo, new TypeReference<Map<String, String>>() {});
 
 		fillAdditionalInformationWithDataFromUserInfo(userInfo, additionalInformation);
 

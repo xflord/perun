@@ -414,6 +414,32 @@ public class Api extends HttpServlet {
 		return new PerunClient();
 	}
 
+	private void getIntrospectionData(HttpServletRequest req, Map<String, String> additionalInformation) {
+		Iterator<String> headerNamesIterator = req.getHeaderNames().asIterator();
+		Map<String, String> headers = new HashMap<>();
+		while (headerNamesIterator.hasNext()) {
+			String headerName = headerNamesIterator.next();
+			headers.put(headerName, req.getHeader(headerName));
+		}
+		String name = req.getHeader("name");
+		if (isEmpty(name)) {
+			String familyName = req.getHeader("family_name");
+			String firstName = req.getHeader("given_name");
+			if (isNotEmpty(firstName) && isNotEmpty(familyName)) {
+				name = firstName + " " + familyName;
+			}
+		}
+		if (isNotEmpty(name)){
+			additionalInformation.put("displayName", name);
+		}
+		String email = req.getHeader("email");
+		if (isNotEmpty(email)) {
+			additionalInformation.put("mail", email);
+		}
+		List<String> pathToIdpName = BeansUtils.getCoreConfig().getUserInfoEndpointExtSourceFriendlyName();
+
+	}
+
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
