@@ -10,15 +10,20 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.WrongAttributeAssignmentException;
 import cz.metacentrum.perun.core.api.exceptions.WrongAttributeValueException;
 import cz.metacentrum.perun.core.api.exceptions.WrongReferenceAttributeValueException;
+import cz.metacentrum.perun.core.blImpl.AttributesManagerBlImpl;
 import cz.metacentrum.perun.core.impl.PerunSessionImpl;
 import cz.metacentrum.perun.core.implApi.modules.attributes.UserAttributesModuleAbstract;
 import cz.metacentrum.perun.core.implApi.modules.attributes.UserAttributesModuleImplApi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static cz.metacentrum.perun.core.impl.PerunLocksUtils.lockAttribute;
 
 /**
  * Checks and fills at specified facility users UID.
@@ -33,6 +38,7 @@ public class urn_perun_user_attribute_def_def_uid_namespace extends UserAttribut
 	private static final String A_E_namespace_maxUID = AttributesManager.NS_ENTITYLESS_ATTR_DEF + ":namespace-maxUID";
 	private static final String A_E_namespace_namespace_uid_policy = AttributesManager.NS_ENTITYLESS_ATTR_DEF + ":namespace-uid-policy";
 	private static final String UID_POLICY_INCREMENT = "increment";
+	private final static Logger log = LoggerFactory.getLogger(AttributesManagerBlImpl.class);
 
 	/**
 	 * Checks the new UID of the user. The new UID must
@@ -111,6 +117,7 @@ public class urn_perun_user_attribute_def_def_uid_namespace extends UserAttribut
 
 		// Get all attributes urn:perun:member:attribute-def:def:uid-namespace:[uid-namespace], then we can get the new UID
 		List<Attribute> uidAttributes = sess.getPerunBl().getAttributesManagerBl().getAttributesByAttributeDefinition(sess, attribute);
+		log.debug("UID ATTR values: " + uidAttributes);
 		for (Attribute uidAttribute: uidAttributes) {
 			if(uidAttribute.getValue() != null) values.add((Integer) uidAttribute.getValue());
 		}

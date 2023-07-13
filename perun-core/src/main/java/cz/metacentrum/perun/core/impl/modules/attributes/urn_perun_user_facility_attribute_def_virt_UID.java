@@ -12,13 +12,18 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.WrongAttributeAssignmentException;
 import cz.metacentrum.perun.core.api.exceptions.WrongAttributeValueException;
 import cz.metacentrum.perun.core.api.exceptions.WrongReferenceAttributeValueException;
+import cz.metacentrum.perun.core.blImpl.AttributesManagerBlImpl;
 import cz.metacentrum.perun.core.impl.PerunSessionImpl;
 import cz.metacentrum.perun.core.impl.Utils;
 import cz.metacentrum.perun.core.implApi.modules.attributes.UserFacilityVirtualAttributesModuleAbstract;
 import cz.metacentrum.perun.core.implApi.modules.attributes.UserFacilityVirtualAttributesModuleImplApi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static cz.metacentrum.perun.core.impl.PerunLocksUtils.lockAttribute;
 
 /**
  * Checks and fills at specified facility users UID.
@@ -27,6 +32,7 @@ import java.util.List;
  * @author Lukáš Pravda   <luky.pravda@gmail.com>
  */
 public class urn_perun_user_facility_attribute_def_virt_UID extends UserFacilityVirtualAttributesModuleAbstract implements UserFacilityVirtualAttributesModuleImplApi {
+	private final static Logger log = LoggerFactory.getLogger(AttributesManagerBlImpl.class);
 
 	/**
 	 * Checks the new UID of the user at the specified facility. The new UID must
@@ -106,6 +112,7 @@ public class urn_perun_user_facility_attribute_def_virt_UID extends UserFacility
 	@Override
 	public boolean setAttributeValue(PerunSessionImpl sess, User user, Facility facility, Attribute attribute) throws WrongReferenceAttributeValueException {
 		AttributeDefinition userUidAttributeDefinition;
+		Attribute userUidAttribute;
 		try {
 			// Get the f:uid-namespace attribute
 			Attribute uidNamespaceAttribute = sess.getPerunBl().getAttributesManagerBl().getAttribute(sess, facility, AttributesManager.NS_FACILITY_ATTR_DEF + ":uid-namespace");
@@ -114,14 +121,16 @@ public class urn_perun_user_facility_attribute_def_virt_UID extends UserFacility
 				throw new WrongReferenceAttributeValueException(attribute, uidNamespaceAttribute);
 			}
 			userUidAttributeDefinition = sess.getPerunBl().getAttributesManagerBl().getAttributeDefinition(sess, AttributesManager.NS_USER_ATTR_DEF + ":uid-namespace:" + uidNamespaceAttribute.getValue());
-		} catch (AttributeNotExistsException e) {
+			userUidAttribute = new Attribute(userUidAttributeDefinition);
+			lockAttribute(userUidAttributeDefinition);
+			log.debug("VIRT UID ATTR SET:" + sess.getPerunBl().getAttributesManagerBl().setAttributeWithoutCheck(sess, user, userUidAttribute));
+			userUidAttribute = sess.getPerunBl().getAttributesManagerBl().fillAttribute(sess, user, userUidAttribute);
+			log.debug(" VIRT UID VALUE :" + userUidAttribute);
+		} catch (AttributeNotExistsException | WrongAttributeValueException e) {
 			throw new InternalErrorException(e);
 		} catch (WrongAttributeAssignmentException e) {
 			throw new ConsistencyErrorException(e);
 		}
-
-		Attribute userUidAttribute = new Attribute(userUidAttributeDefinition);
-		userUidAttribute.setValue(attribute.getValue());
 
 		try {
 			return sess.getPerunBl().getAttributesManagerBl().setAttributeWithoutCheck(sess, user, userUidAttribute);
